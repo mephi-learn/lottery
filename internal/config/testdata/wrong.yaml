@@ -1,0 +1,4 @@
+---
+telemetry:
+    # incorrect type (want bool)
+  runtime: "lolkek"
