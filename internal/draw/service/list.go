@@ -7,7 +7,7 @@ import (
 )
 
 func (s *drawService) ListActiveDraw(ctx context.Context) ([]draw.Draw, error) {
-	list, err := s.repo.ListActiveDraw(ctx)
+	list, err := s.repo.ListActive(ctx)
 	if err != nil {
 		return nil, errors.Errorf("failed to list draws: %w", err)
 	}

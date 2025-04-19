@@ -37,7 +37,7 @@ func WithLogger(logger log.Logger) HandlerOption {
 	}
 }
 
-// WithService добавляет [bindService] в обработчик запросов.
+// WithService добавляет [drawService] в обработчик запросов.
 func WithService(svc drawService) HandlerOption {
 	return func(o *handler) {
 		o.service = svc
