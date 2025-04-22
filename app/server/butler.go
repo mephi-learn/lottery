@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"homework/pkg/log"
 	"reflect"
 	"runtime"
 	"strings"
-
-	"homework/pkg/log"
 )
 
 // Manager позволяет упростить рутинную операцию завершения сервисов.
