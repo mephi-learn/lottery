@@ -2,12 +2,12 @@ package controller
 
 import (
 	"encoding/json"
-	"homework/internal/auth"
+	"homework/internal/models"
 	"net/http"
 )
 
 func (h *handler) signIn(w http.ResponseWriter, r *http.Request) {
-	var signIn auth.SignInInput
+	var signIn models.SignInInput
 
 	err := json.NewDecoder(r.Body).Decode(&signIn)
 	if err != nil {

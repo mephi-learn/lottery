@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"homework/internal/auth"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 )
@@ -60,7 +60,7 @@ func WithStorage(st Storage) RepoOption {
 	}
 }
 
-func (r *repository) Create(ctx context.Context, userData *auth.SignUpInput) (int, error) {
+func (r *repository) Create(ctx context.Context, userData *models.SignUpInput) (int, error) {
 	if userData.Admin {
 		var userCount int
 		if err := r.db.QueryRowContext(ctx, "select count(*) cn from users where admin=$1", true).Scan(&userCount); err != nil {
@@ -80,8 +80,8 @@ func (r *repository) Create(ctx context.Context, userData *auth.SignUpInput) (in
 	return userId, nil
 }
 
-func (r *repository) GetByUsernameAndPassword(ctx context.Context, userData *auth.SignInInput) (*auth.User, error) {
-	user := auth.User{}
+func (r *repository) GetByUsernameAndPassword(ctx context.Context, userData *models.SignInInput) (*models.User, error) {
+	user := models.User{}
 	if err := r.db.QueryRowContext(ctx, "select id, name, username, email, admin from users where username=$1 and password=$2", userData.Username, userData.Password).
 		Scan(&user.ID, &user.Name, &user.Username, &user.Email, &user.Admin); err != nil {
 		return nil, errors.Errorf("user not found: %w", err)
@@ -90,8 +90,8 @@ func (r *repository) GetByUsernameAndPassword(ctx context.Context, userData *aut
 	return &user, nil
 }
 
-func (r *repository) GetById(ctx context.Context, userId int) (*auth.User, error) {
-	user := auth.User{}
+func (r *repository) GetById(ctx context.Context, userId int) (*models.User, error) {
+	user := models.User{}
 	if err := r.db.QueryRowContext(ctx, "select id, name, username, email, admin from users where id=$1", userId).
 		Scan(&user.ID, &user.Name, &user.Username, &user.Email, &user.Admin); err != nil {
 		return nil, errors.Errorf("user not found: %w", err)

@@ -1,4 +1,6 @@
-package auth
+package models
+
+type CtxAuthKey struct{}
 
 type SignUpInput struct {
 	Name     string `json:"name"`

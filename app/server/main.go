@@ -45,27 +45,6 @@ func main() {
 	// Отдельная группа логгеров для серверов
 	serverlog := logger.WithGroup("http")
 
-	// Родительский логгер для подсистем внутри сервиса draw.
-	drawlog := serverlog.WithGroup("draw")
-
-	// Инициализация репозитория Draw.
-	drawRepo := start(drawrepository.NewRepository(
-		drawrepository.WithStorage(st),
-		drawrepository.WithLogger(drawlog.WithGroup("repository")),
-	))
-
-	// Инициализация сервиса Draw.
-	drawService := start(drawservice.NewDrawService(
-		drawservice.WithDrawLogger(drawlog.WithGroup("service")),
-		drawservice.WithDrawRepository(drawRepo),
-	))
-
-	// Инициализация контроллера Draw.
-	drawController := start(drawcontroller.NewHandler(
-		drawcontroller.WithLogger(drawlog.WithGroup("controller")),
-		drawcontroller.WithService(drawService),
-	))
-
 	// Родительский логгер для подсистем внутри сервиса auth.
 	authlog := serverlog.WithGroup("auth")
 
@@ -85,6 +64,28 @@ func main() {
 	authController := start(authcontroller.NewHandler(
 		authcontroller.WithLogger(authlog.WithGroup("controller")),
 		authcontroller.WithService(authService),
+	))
+
+	// Родительский логгер для подсистем внутри сервиса draw.
+	drawlog := serverlog.WithGroup("draw")
+
+	// Инициализация репозитория Draw.
+	drawRepo := start(drawrepository.NewRepository(
+		drawrepository.WithStorage(st),
+		drawrepository.WithLogger(drawlog.WithGroup("repository")),
+	))
+
+	// Инициализация сервиса Draw.
+	drawService := start(drawservice.NewDrawService(
+		drawservice.WithDrawLogger(drawlog.WithGroup("service")),
+		drawservice.WithDrawRepository(drawRepo),
+		drawservice.WithAuthService(authService),
+	))
+
+	// Инициализация контроллера Draw.
+	drawController := start(drawcontroller.NewHandler(
+		drawcontroller.WithLogger(drawlog.WithGroup("controller")),
+		drawcontroller.WithService(drawService),
 	))
 
 	// Инициализация HTTP сервера.

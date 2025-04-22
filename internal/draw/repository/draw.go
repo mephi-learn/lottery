@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"homework/internal/draw"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"time"
@@ -73,7 +73,6 @@ func (r *repository) SetStartTime(ctx context.Context, drawId int, start time.Ti
 	return nil
 }
 
-func (r *repository) ListActive(ctx context.Context) ([]draw.Draw, error) {
+func (r *repository) ListActive(ctx context.Context) ([]models.Draw, error) {
 	return nil, nil
-
 }

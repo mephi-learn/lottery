@@ -2,7 +2,6 @@ package log
 
 import (
 	"bytes"
-
 	"homework/pkg/log/logutil"
 )
 

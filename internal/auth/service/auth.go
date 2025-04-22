@@ -4,17 +4,16 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"homework/internal/auth"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 )
 
 // Repository реализует интерфейс репозитория пользователей.
 type Repository interface {
-	Create(ctx context.Context, user *auth.SignUpInput) (userId int, err error)                   // Создание пользователя
-	GetByUsernameAndPassword(ctx context.Context, userData *auth.SignInInput) (*auth.User, error) // Получение данных пользователя по его логину и паролю
-	GetById(ctx context.Context, userId int) (*auth.User, error)                                  // Получение данных пользователя по его идентификатору
-	// ChangePassword(ctx context.Context, drawId int, begin time.Time) error      // Смена пароля
+	Create(ctx context.Context, user *models.SignUpInput) (userId int, err error)                     // Создание пользователя
+	GetByUsernameAndPassword(ctx context.Context, userData *models.SignInInput) (*models.User, error) // Получение данных пользователя по его логину и паролю
+	GetById(ctx context.Context, userId int) (*models.User, error)                                    // Получение данных пользователя по его идентификатору
 }
 
 type AuthOption func(*authService) error

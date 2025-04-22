@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
+	"homework/internal/models"
 	"net/http"
 	"strings"
 	"time"
@@ -38,14 +40,20 @@ func Authenticated(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "userID", claims.Subject)
+		user := models.User{}
+		if err = json.Unmarshal([]byte(claims.Subject), &user); err != nil {
+			http.Error(w, "Invalid user info", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), models.CtxAuthKey{}, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
-func GenerateJWTToken(userID string) (string, error) {
+func GenerateJWTToken(userJson string) (string, error) {
 	claims := jwt.RegisteredClaims{
-		Subject:   userID,
+		Subject:   userJson,
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(jwtDuration)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
