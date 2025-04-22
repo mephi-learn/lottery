@@ -4,9 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	authcontroller "homework/internal/auth/controller"
-	authrepository "homework/internal/auth/repository"
-	authservice "homework/internal/auth/service"
 	"homework/internal/config"
 	drawcontroller "homework/internal/draw/controller"
 	drawrepository "homework/internal/draw/repository"
@@ -45,28 +42,7 @@ func main() {
 	// Отдельная группа логгеров для серверов
 	serverlog := logger.WithGroup("http")
 
-	// Родительский логгер для подсистем внутри сервиса auth.
-	authlog := serverlog.WithGroup("auth")
-
-	// Инициализация репозитория auth.
-	authRepo := start(authrepository.NewRepository(
-		authrepository.WithStorage(st),
-		authrepository.WithLogger(authlog.WithGroup("repository")),
-	))
-
-	// Инициализация сервиса auth.
-	authService := start(authservice.NewAuthService(
-		authservice.WithAuthLogger(authlog.WithGroup("service")),
-		authservice.WithAuthRepository(authRepo),
-	))
-
-	// Инициализация контроллера auth.
-	authController := start(authcontroller.NewHandler(
-		authcontroller.WithLogger(authlog.WithGroup("controller")),
-		authcontroller.WithService(authService),
-	))
-
-	// Родительский логгер для подсистем внутри сервиса draw.
+	// Родительский логгер для подсистем внутри server/http.
 	drawlog := serverlog.WithGroup("draw")
 
 	// Инициализация репозитория Draw.
@@ -79,7 +55,6 @@ func main() {
 	drawService := start(drawservice.NewDrawService(
 		drawservice.WithDrawLogger(drawlog.WithGroup("service")),
 		drawservice.WithDrawRepository(drawRepo),
-		drawservice.WithAuthService(authService),
 	))
 
 	// Инициализация контроллера Draw.
@@ -91,7 +66,6 @@ func main() {
 	// Инициализация HTTP сервера.
 	http := start(server.New(cfg.Server.HTTP,
 		server.WithLogger(serverlog.WithGroup("server")),
-		server.WithController(authController),
 		server.WithController(drawController),
 	))
 
@@ -105,6 +79,7 @@ func main() {
 	}
 
 	logger.Info("server stopping")
+
 }
 
 // startErr завершает работу программы с ошибкой, если err != nil.

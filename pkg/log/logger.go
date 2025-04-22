@@ -1,11 +1,12 @@
 package log
 
 import (
-	"homework/pkg/errors"
-	"homework/pkg/log/logutil"
 	"log/slog"
 	"math"
 	"os"
+
+	"homework/pkg/errors"
+	"homework/pkg/log/logutil"
 )
 
 const keySeparator = '/'

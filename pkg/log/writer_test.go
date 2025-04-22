@@ -21,7 +21,7 @@ func TestAppendFileWriterSingle(t *testing.T) {
 
 	w := opt.writers[0]
 	require.IsType(fileWriter{}, w)
-	require.Equal(os.Stdout, w.(fileWriter).File) //nolint: errcheck
+	require.Equal(os.Stdout, w.(fileWriter).File)
 }
 
 func TestAppendFileWriterDupe(t *testing.T) {

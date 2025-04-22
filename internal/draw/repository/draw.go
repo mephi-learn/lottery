@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"homework/internal/models"
+	"homework/internal/draw"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"time"
@@ -57,22 +57,23 @@ func WithStorage(st Storage) RepoOption {
 	}
 }
 
-func (r *repository) Create(ctx context.Context, begin time.Time, start time.Time, lotteryType string) (int, error) {
+func (r *repository) CreateDraw(ctx context.Context, begin time.Time, start time.Time, lotteryType string) (int, error) {
 	return 0, nil
 }
 
-func (r *repository) Cancel(ctx context.Context, drawId int) error {
+func (r *repository) CancelDraw(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) SetBeginTime(ctx context.Context, drawId int, begin time.Time) error {
+func (r *repository) DrawSetBeginTime(ctx context.Context, drawId int, begin time.Time) error {
 	return nil
 }
 
-func (r *repository) SetStartTime(ctx context.Context, drawId int, start time.Time) error {
+func (r *repository) DrawSetStartTime(ctx context.Context, drawId int, start time.Time) error {
 	return nil
 }
 
-func (r *repository) ListActive(ctx context.Context) ([]models.Draw, error) {
+func (r *repository) ListActiveDraw(ctx context.Context) ([]draw.Draw, error) {
 	return nil, nil
+
 }

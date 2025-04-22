@@ -3,9 +3,8 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"time"
-
 	_ "github.com/lib/pq"
+	"time"
 )
 
 type Storage interface {
@@ -59,49 +58,49 @@ func (r *storage) SetConnMaxIdleTime(d time.Duration) {
 }
 
 func (r *storage) Stats() sql.DBStats {
-	return r.postgres.Stats()
+	return r.Stats()
 }
 
 func (r *storage) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
-	return r.postgres.PrepareContext(ctx, query)
+	return r.PrepareContext(ctx, query)
 }
 
 func (r *storage) Prepare(query string) (*sql.Stmt, error) {
-	return r.postgres.Prepare(query)
+	return r.Prepare(query)
 }
 
 func (r *storage) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	return r.postgres.ExecContext(ctx, query, args...)
+	return r.ExecContext(ctx, query, args...)
 }
 
 func (r *storage) Exec(query string, args ...any) (sql.Result, error) {
-	return r.postgres.Exec(query, args...)
+	return r.Exec(query, args...)
 }
 
 func (r *storage) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	return r.postgres.QueryContext(ctx, query, args...)
+	return r.QueryContext(ctx, query, args...)
 }
 
 func (r *storage) Query(query string, args ...any) (*sql.Rows, error) {
-	return r.postgres.Query(query, args...)
+	return r.Query(query, args...)
 }
 
 func (r *storage) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
-	return r.postgres.QueryRowContext(ctx, query, args...)
+	return r.QueryRowContext(ctx, query, args...)
 }
 
 func (r *storage) QueryRow(query string, args ...any) *sql.Row {
-	return r.postgres.QueryRow(query, args...)
+	return r.QueryRow(query, args...)
 }
 
 func (r *storage) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
-	return r.postgres.BeginTx(ctx, opts)
+	return r.BeginTx(ctx, opts)
 }
 
 func (r *storage) Begin() (*sql.Tx, error) {
-	return r.postgres.Begin()
+	return r.Begin()
 }
 
 func (r *storage) Conn(ctx context.Context) (*sql.Conn, error) {
-	return r.postgres.Conn(ctx)
+	return r.Conn(ctx)
 }
