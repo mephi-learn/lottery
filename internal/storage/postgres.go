@@ -3,9 +3,10 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"homework/pkg/log"
+
 	"github.com/go-errors/errors"
 	_ "github.com/lib/pq"
-	"homework/pkg/log"
 )
 
 var _ Storage = (*storage)(nil)
@@ -45,7 +46,7 @@ func NewStorage(opts ...Option) (*storage, error) {
 		return nil, errors.Errorf("no config")
 	}
 
-	//st.ValidateConfig()
+	// st.ValidateConfig()
 
 	if st.log == nil {
 		return nil, errors.Errorf("no logger provided")
@@ -53,7 +54,11 @@ func NewStorage(opts ...Option) (*storage, error) {
 
 	var err error
 	config := st.postgres.Config
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Host, config.Port, config.User, config.Password, config.Database)
+	schema := ""
+	if config.Schema != "" {
+		schema = "search_path=" + config.Schema
+	}
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s %s sslmode=disable", config.Host, config.Port, config.User, config.Password, config.Database, schema)
 	st.postgres.DB, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, errors.Errorf("unable create storage: %w", err)

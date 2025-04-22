@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
+	"homework/pkg/errors"
+	"homework/pkg/log/testlog"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"homework/pkg/errors"
-	"homework/pkg/log/testlog"
 )
 
 func TestNewButler(t *testing.T) {

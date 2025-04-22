@@ -92,7 +92,7 @@ func TestErr_StackLast(t *testing.T) {
 	t.Parallel()
 
 	result := fn("hello")
-	stack := string(result.(*wrappedError).StackLast())
+	stack := string(result.(*wrappedError).StackLast()) //nolint: errcheck
 	stacks := strings.Split(stack, "\n")
 	require.Contains(t, stacks[1], "fn: return Errorf(\"fn wrapped %w\", err)",
 		"Stack trace does not contain source line: 'fn: return Errorf(\"fn wrapped %%w\", err)'", stack)

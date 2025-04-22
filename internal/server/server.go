@@ -4,18 +4,15 @@ import (
 	"homework/pkg/errors"
 	"net"
 	"net/http"
-	"sync"
 	"sync/atomic"
 )
 
 type Server struct {
 	options
 
-	listener *net.TCPListener
-	mux      *http.ServeMux
+	mux *http.ServeMux
 
-	wg   sync.WaitGroup // для ожидания закрытия всех сессий
-	done atomic.Bool    // для сигнализаци сессиям о начале shutdown-а
+	done atomic.Bool // для сигнализаци сессиям о начале shutdown-а
 }
 
 func New(config Config, opts ...Option) (*Server, error) {
@@ -56,5 +53,6 @@ func (s *Server) ListenAndServe() error {
 		controller.WithRouter(mux)
 	}
 	s.mux = mux
+
 	return http.ListenAndServe(s.options.addr.String(), s.mux)
 }

@@ -1,13 +1,12 @@
 package log
 
 import (
+	"homework/pkg/errors"
 	"io"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
-
-	"homework/pkg/errors"
 )
 
 // Format тип для формата вывода.
