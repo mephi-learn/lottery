@@ -11,6 +11,7 @@ func expected() *Config {
 	var config Config
 
 	config.Server.HTTP.Addr = "127.0.0.1:389"
+	config.Telemetry.Runtime = true
 	config.Logger.Level = "debug"
 
 	return &config

@@ -5,8 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"homework/pkg/log/filter"
-	"homework/pkg/log/logutil"
 	"log/slog"
 	"os"
 	"runtime"
@@ -15,6 +13,9 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
+
+	"homework/pkg/log/filter"
+	"homework/pkg/log/logutil"
 )
 
 func TestNewLogHandlerDefaultWriter(t *testing.T) {
@@ -395,7 +396,7 @@ func TestWithGroup(t *testing.T) {
 				h = h.WithGroup(group)
 			}
 
-			require.Equal(t, test.expected, h.(zlHandler).groups) //nolint: errcheck
+			require.Equal(t, test.expected, h.(zlHandler).groups)
 		})
 	}
 }

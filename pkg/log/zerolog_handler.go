@@ -2,9 +2,6 @@ package log
 
 import (
 	"context"
-	"homework/pkg/errors"
-	"homework/pkg/log/filter"
-	"homework/pkg/log/logutil"
 	"io"
 	"log/slog"
 	"runtime"
@@ -14,6 +11,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+
+	"homework/pkg/errors"
+	"homework/pkg/log/filter"
+	"homework/pkg/log/logutil"
 )
 
 const zlTimeFormat = time.RFC3339Nano

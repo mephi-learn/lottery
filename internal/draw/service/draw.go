@@ -2,31 +2,30 @@ package service
 
 import (
 	"context"
-	"homework/internal/models"
+	"homework/internal/draw"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"time"
 )
 
-// Repository реализует интерфейс репозитория тиража.
-type Repository interface {
-	Create(ctx context.Context, begin time.Time, start time.Time, lotteryType string) (drawId int, err error) // Создание тиража, указывается дата начала и окончания приёма билетов
-	Cancel(ctx context.Context, drawId int) error                                                             // Отмена тиража, все деньги возвращаются клиентам
-	SetBeginTime(ctx context.Context, drawId int, begin time.Time) error                                      // Установка времени начала продажи билетов
-	SetStartTime(ctx context.Context, drawId int, start time.Time) error                                      // Установка времени начала тиража
-	ListActive(ctx context.Context) ([]models.Draw, error)                                                    // Получение списка
+// Lottery реализует интерфейс лотереи
+type Lottery interface {
+	Do() bool
 }
 
-// AuthService реализует интерфейс репозитория тиража.
-type AuthService interface {
-	GetById(ctx context.Context, userId int) (*models.User, error) // Получение информации по пользователю
+// Repository реализует интерфейс репозитория тиража
+type Repository interface {
+	CreateDraw(ctx context.Context, begin time.Time, start time.Time, lotteryType string) (drawId int, err error) // Создание тиража, указывается дата начала и окончания приёма билетов
+	CancelDraw(ctx context.Context, drawId int) error                                                             // Отмена тиража, все деньги возвращаются клиентам
+	DrawSetBeginTime(ctx context.Context, drawId int, begin time.Time) error                                      // Установка времени начала продажи билетов
+	DrawSetStartTime(ctx context.Context, drawId int, start time.Time) error                                      // Установка времени начала тиража
+	ListActiveDraw(ctx context.Context) ([]draw.Draw, error)                                                      // Получение списка
 }
 
 type DrawOption func(*drawService) error
 
 type drawService struct {
 	repo Repository
-	auth AuthService
 
 	log log.Logger
 }
@@ -60,13 +59,6 @@ func WithDrawLogger(logger log.Logger) DrawOption {
 func WithDrawRepository(repo Repository) DrawOption {
 	return func(r *drawService) error {
 		r.repo = repo
-		return nil
-	}
-}
-
-func WithAuthService(auth AuthService) DrawOption {
-	return func(r *drawService) error {
-		r.auth = auth
 		return nil
 	}
 }
