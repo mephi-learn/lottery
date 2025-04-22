@@ -3,13 +3,12 @@ package log
 import (
 	"context"
 	"errors"
+	"homework/pkg/log/logutil"
 	"log/slog"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"homework/pkg/log/logutil"
 )
 
 func TestLevelConfigString(t *testing.T) {

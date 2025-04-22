@@ -1,8 +1,6 @@
 ---
 server:
-  ldap:
+  http:
     addr: 127.0.0.1:389
-telemetry:
-  runtime: true
 logger:
   level: debug
