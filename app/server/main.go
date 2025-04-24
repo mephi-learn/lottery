@@ -11,6 +11,8 @@ import (
 	drawcontroller "homework/internal/draw/controller"
 	drawrepository "homework/internal/draw/repository"
 	drawservice "homework/internal/draw/service"
+	lotteryservice "homework/internal/lottery/service"
+	"homework/internal/models"
 	"homework/internal/server"
 	"homework/internal/storage"
 	"homework/pkg/log"
@@ -67,6 +69,16 @@ func main() {
 	))
 
 	// Родительский логгер для подсистем внутри сервиса draw.
+	lotteryLog := serverlog.WithGroup("lottery")
+
+	lotteryService := start(lotteryservice.NewLotteryService(
+		lotteryservice.WithLogger(lotteryLog.WithGroup("service")),
+	))
+
+	var lottery536 *models.Lottery536
+	lotteryService.RegisterLottery(lottery536)
+
+	// Родительский логгер для подсистем внутри сервиса draw.
 	drawlog := serverlog.WithGroup("draw")
 
 	// Инициализация репозитория Draw.
@@ -79,7 +91,7 @@ func main() {
 	drawService := start(drawservice.NewDrawService(
 		drawservice.WithDrawLogger(drawlog.WithGroup("service")),
 		drawservice.WithDrawRepository(drawRepo),
-		drawservice.WithAuthService(authService),
+		drawservice.WithLotteryService(lotteryService),
 	))
 
 	// Инициализация контроллера Draw.

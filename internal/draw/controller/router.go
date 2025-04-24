@@ -7,7 +7,6 @@ import (
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"net/http"
-	"time"
 )
 
 type handler struct {
@@ -45,15 +44,15 @@ func WithService(svc drawService) HandlerOption {
 }
 
 type drawService interface {
-	CreateDraw(ctx context.Context, begin time.Time, start time.Time) (drawId int, err error) // Создание тиража с указанием типа лотереи и времени старта.
-	ListActiveDraw(ctx context.Context) ([]models.Draw, error)                                // Получение списка активных тиражей.
-	CancelDraw(ctx context.Context, drawId int) error                                         // Отмена тиража (изменение статуса на CANCELLED).
+	CreateDraw(ctx context.Context, draw *models.DrawInput) (drawId int, err error) // Создание тиража с указанием типа лотереи и времени старта.
+	ListActiveDraw(ctx context.Context) ([]*models.DrawOutput, error)               // Получение списка активных тиражей.
+	CancelDraw(ctx context.Context, drawId int) error                               // Отмена тиража (изменение статуса на CANCELLED).
 }
 
 type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("POST /api/admin/draws", auth.Authenticated(h.CreateDraw))
-	mux.Handle("/api/admin/draws/{id}/cancel", auth.Authenticated(h.CancelDraw))
+	mux.Handle("PUT /api/admin/draws/{id}/cancel", auth.Authenticated(h.CancelDraw))
 	mux.Handle("GET /api/draws/active", http.HandlerFunc(h.ListActiveDraw))
 }

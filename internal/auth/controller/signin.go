@@ -11,16 +11,16 @@ func (h *handler) signIn(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&signIn)
 	if err != nil {
-		NewErrorResponse(w, http.StatusBadRequest, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	signedToken, err := h.service.SignIn(r.Context(), &signIn)
 	if err != nil {
-		NewErrorResponse(w, http.StatusBadRequest, "user was not found")
+		http.Error(w, "user was not found", http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(signedToken))
+	_, _ = w.Write([]byte(signedToken))
 }

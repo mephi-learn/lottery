@@ -2,77 +2,211 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"homework/internal/models"
 	"homework/pkg/errors"
-	"homework/pkg/log"
 	"time"
 )
 
-type Storage interface {
-	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
-}
-
-// RepoOption позволяет настроить репозиторий добавлением новых функциональных опций.
-type RepoOption func(*repository) error
-
-type repository struct {
-	db Storage
-
-	log log.Logger
-}
-
-// NewRepository создаёт объект репозитория, который должен удовлетворять требованиям сервисов.
-func NewRepository(opts ...RepoOption) (*repository, error) {
-	var repo repository
-
-	for _, opt := range opts {
-		if err := opt(&repo); err != nil {
-			return nil, errors.Errorf("apply option: %w", err)
-		}
+func (r *repository) Create(ctx context.Context, draw *models.DrawStore) (int, error) {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return -1, errors.Errorf("authentificate need: %w", err)
 	}
 
-	if repo.log == nil {
-		return nil, errors.Errorf("no logger provided")
+	if !user.Admin {
+		return -1, errors.Errorf("permnission denied, admin only area")
 	}
 
-	if repo.db == nil {
-		return nil, errors.Errorf("no database provided")
+	var drawId int
+	if err := r.db.QueryRowContext(ctx, "insert into draws(status_id, lottery_type, sale_date, start_date) values($1, $2, $3, $4) returning id",
+		draw.StatusId, draw.LotteryType, draw.SaleDate, draw.StartDate).Scan(&drawId); err != nil {
+		return -1, errors.Errorf("failed to create draw: %w", err)
 	}
 
-	return &repo, nil
+	return drawId, nil
 }
 
-func WithLogger(logger log.Logger) RepoOption {
-	return func(r *repository) error {
-		r.log = logger
-		return nil
+func (r *repository) Planned(ctx context.Context, drawId int) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
 	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusPlanned, drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw status: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
+	return nil
 }
 
-func WithStorage(st Storage) RepoOption {
-	return func(r *repository) error {
-		r.db = st
-		return nil
+func (r *repository) Active(ctx context.Context, drawId int) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
 	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusActive, drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw status: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
+	return nil
 }
 
-func (r *repository) Create(ctx context.Context, begin time.Time, start time.Time, lotteryType string) (int, error) {
-	return 0, nil
+func (r *repository) Completed(ctx context.Context, drawId int) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
+	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusCompleted, drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw status: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
+	return nil
 }
 
 func (r *repository) Cancel(ctx context.Context, drawId int) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
+	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusCanceled, drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw status: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
 	return nil
 }
 
-func (r *repository) SetBeginTime(ctx context.Context, drawId int, begin time.Time) error {
+func (r *repository) Failed(ctx context.Context, drawId int) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
+	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusFailed, drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw status: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
 	return nil
 }
 
-func (r *repository) SetStartTime(ctx context.Context, drawId int, start time.Time) error {
+func (r *repository) SetSaleDate(ctx context.Context, drawId int, begin time.Time) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
+	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set dale_date = $1 where id = $2", begin.Unix(), drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw sale_date: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
 	return nil
 }
 
-func (r *repository) ListActive(ctx context.Context) ([]models.Draw, error) {
-	return nil, nil
+func (r *repository) SetStartDate(ctx context.Context, drawId int, start time.Time) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
+	}
+
+	if !user.Admin {
+		return errors.Errorf("permnission denied, admin only area")
+	}
+
+	result, err := r.db.ExecContext(ctx, "update draws set dale_date = $1 where id = $2", start.Unix(), drawId)
+	if err != nil {
+		return errors.Errorf("failed to update draw start_date: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("draw not found: %w", err)
+	}
+
+	return nil
+}
+
+func (r *repository) ListActive(ctx context.Context) ([]models.DrawStore, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE status_id in ($1, $2)", models.DrawStatusPlanned, models.DrawStatusActive)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var draws []models.DrawStore
+	for rows.Next() {
+		var draw models.DrawStore
+		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+			return draws, err
+		}
+		draws = append(draws, draw)
+	}
+	if err = rows.Err(); err != nil {
+		return draws, err
+	}
+
+	return draws, nil
 }

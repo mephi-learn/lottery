@@ -1,39 +1,81 @@
 package models
 
 import (
-	"sync/atomic"
 	"time"
 )
 
 const (
-	StatusUnknown Status = iota
-	StatusPlanned
-	StatusActive
-	StatusCompleted
-	StatusCanceled
-	StatusFailed
+	DrawStatusUnknown DrawStatus = iota
+	DrawStatusPlanned
+	DrawStatusActive
+	DrawStatusCompleted
+	DrawStatusCanceled
+	DrawStatusFailed
 )
 
-type Status int
+type DrawStatus int
 
-func (d *Status) String() string {
+func (d *DrawStatus) String() string {
 	switch *d {
-	case StatusPlanned:
+	case DrawStatusPlanned:
 		return "planned"
-	case StatusActive:
+	case DrawStatusActive:
 		return "active"
-	case StatusCompleted:
+	case DrawStatusCompleted:
 		return "completed"
-	case StatusCanceled:
+	case DrawStatusCanceled:
 		return "canceled"
+	case DrawStatusFailed:
+		return "failed"
 	default:
 		return "unknown"
 	}
 }
 
-type Draw struct {
-	status atomic.Value
+func DrawStatusFromString(status string) DrawStatus {
+	switch status {
+	case "planned":
+		return DrawStatusPlanned
+	case "active":
+		return DrawStatusActive
+	case "completed":
+		return DrawStatusCompleted
+	case "canceled":
+		return DrawStatusCanceled
+	case "failed":
+		return DrawStatusFailed
+	default:
+		return DrawStatusUnknown
+	}
+}
 
-	startTicketBuy time.Time
-	endTicketBuy   time.Time
+type DrawInput struct {
+	Status    string    `json:"status"`
+	Lottery   string    `json:"lottery"`
+	SaleDate  time.Time `json:"sale_date"`
+	StartDate time.Time `json:"start_date"`
+}
+
+type DrawOutput struct {
+	Id        int       `json:"id"`
+	Status    string    `json:"status"`
+	Lottery   string    `json:"lottery"`
+	SaleDate  time.Time `json:"sale_date"`
+	StartDate time.Time `json:"start_date"`
+}
+
+type DrawStore struct {
+	Id          int       `json:"id"`
+	StatusId    int       `json:"status_id"`
+	LotteryType string    `json:"lottery_type"`
+	SaleDate    time.Time `json:"sale_date"`
+	StartDate   time.Time `json:"start_date"`
+}
+
+type Draw struct {
+	Id        int        `json:"id"`
+	Status    DrawStatus `json:"status"`
+	Lottery   Lottery    `json:"lottery"`
+	SaleDate  time.Time  `json:"sale_date"`
+	StartDate time.Time  `json:"start_date"`
 }
