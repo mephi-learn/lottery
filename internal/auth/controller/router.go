@@ -50,11 +50,6 @@ type authService interface {
 type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
-	mux.HandleFunc("POST /sign-up", h.signUp)
-	mux.HandleFunc("POST /sign-in", h.signIn)
-}
-
-func NewErrorResponse(w http.ResponseWriter, statusCode int, errors string) {
-	w.WriteHeader(statusCode)
-	_, _ = w.Write([]byte(errors))
+	mux.HandleFunc("POST /api/auth/sign-up", h.signUp)
+	mux.HandleFunc("POST /api/auth/sign-in", h.signIn)
 }

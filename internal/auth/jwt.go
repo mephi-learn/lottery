@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"encoding/json"
 	"homework/internal/models"
 	"net/http"
@@ -25,7 +24,7 @@ func Authenticated(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		headerParts := strings.Split(authHeader, " ")
-		if len(headerParts) > 1 {
+		if len(headerParts) != 2 {
 			http.Error(w, "invalid auth header", http.StatusBadRequest)
 			return
 		}
@@ -46,7 +45,7 @@ func Authenticated(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), models.CtxAuthKey{}, user)
+		ctx := user.ToContext(r.Context())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
