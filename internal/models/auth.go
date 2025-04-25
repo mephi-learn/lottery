@@ -35,6 +35,8 @@ type User struct {
 	Admin    bool   `json:"admin"`
 }
 
+type CtxAuthKey struct{}
+
 func (u *User) ToContext(ctx context.Context) context.Context {
 	return context.WithValue(ctx, ctxUser, u)
 }

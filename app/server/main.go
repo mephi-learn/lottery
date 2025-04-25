@@ -15,6 +15,9 @@ import (
 	"homework/internal/models"
 	"homework/internal/server"
 	"homework/internal/storage"
+	ticketcontroller "homework/internal/ticket/controller"
+	ticketrepository "homework/internal/ticket/repository"
+	ticketservice "homework/internal/ticket/service"
 	"homework/pkg/log"
 	"os"
 	"os/signal"
@@ -100,11 +103,30 @@ func main() {
 		drawcontroller.WithService(drawService),
 	))
 
+	// Родительский логгер для подсистем внутри сервиса ticket.
+	ticketlog := serverlog.WithGroup("ticket")
+
+	// Инициализация репозитория Ticket.
+	ticketRepo := start(ticketrepository.NewRepository())
+
+	// Инициализация сервиса Ticket.
+	ticketService := start(ticketservice.NewService(
+		ticketRepo,
+		ticketlog.WithGroup("service"),
+	))
+
+	// Инициализация контроллера Ticket.
+	ticketController := start(ticketcontroller.NewHandler(
+		ticketcontroller.WithLogger(ticketlog.WithGroup("controller")),
+		ticketcontroller.WithService(ticketService),
+	))
+
 	// Инициализация HTTP сервера.
 	http := start(server.New(cfg.Server.HTTP,
 		server.WithLogger(serverlog.WithGroup("server")),
 		server.WithController(authController),
 		server.WithController(drawController),
+		server.WithController(ticketController),
 	))
 
 	go manager.run(http.ListenAndServe)
