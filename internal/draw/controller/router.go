@@ -47,6 +47,8 @@ type drawService interface {
 	CreateDraw(ctx context.Context, draw *models.DrawInput) (drawId int, err error) // Создание тиража с указанием типа лотереи и времени старта.
 	ListActiveDraw(ctx context.Context) ([]*models.DrawOutput, error)               // Получение списка активных тиражей.
 	CancelDraw(ctx context.Context, drawId int) error                               // Отмена тиража (изменение статуса на CANCELLED).
+	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)             // Информация по тиражу.
+	LotteryByType(lotteryType string) (models.Lottery, error)                       // Получение лотереи по её типа
 }
 
 type RouteOption func(*handler)
@@ -55,4 +57,5 @@ func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("POST /api/admin/draws", auth.Authenticated(h.CreateDraw))
 	mux.Handle("PUT /api/admin/draws/{id}/cancel", auth.Authenticated(h.CancelDraw))
 	mux.Handle("GET /api/draws/active", http.HandlerFunc(h.ListActiveDraw))
+	mux.Handle("GET /api/draws/{id}", http.HandlerFunc(h.GetDraw))
 }
