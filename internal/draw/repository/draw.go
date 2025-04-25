@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"homework/internal/models"
 	"homework/pkg/errors"
 	"time"
@@ -24,6 +25,19 @@ func (r *repository) Create(ctx context.Context, draw *models.DrawStore) (int, e
 	}
 
 	return drawId, nil
+}
+
+func (r *repository) Get(ctx context.Context, drawId int) (*models.DrawStore, error) {
+	draw := models.DrawStore{}
+	if err := r.db.QueryRowContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = $1", drawId).Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.Errorf("failed to create draw: %w", err)
+		}
+
+		return nil, nil
+	}
+
+	return &draw, nil
 }
 
 func (r *repository) Planned(ctx context.Context, drawId int) error {

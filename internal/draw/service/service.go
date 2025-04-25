@@ -15,6 +15,7 @@ type Repository interface {
 	SetSaleDate(ctx context.Context, drawId int, begin time.Time) error         // Установка времени начала продажи билетов
 	SetStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
 	ListActive(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
+	Get(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
 }
 
 // LotteryService реализует интерфейс сервиса лотереи.
