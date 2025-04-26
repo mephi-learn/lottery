@@ -10,12 +10,16 @@ import (
 
 // Repository реализует интерфейс репозитория тиража.
 type Repository interface {
-	Create(ctx context.Context, draw *models.DrawStore) (drawId int, err error) // Создание тиража
-	Cancel(ctx context.Context, drawId int) error                               // Отмена тиража, все деньги возвращаются клиентам
-	SetSaleDate(ctx context.Context, drawId int, begin time.Time) error         // Установка времени начала продажи билетов
-	SetStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
-	ListActive(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
-	Get(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
+	CreateDraw(ctx context.Context, draw *models.DrawStore) (drawId int, err error) // Создание тиража
+	CancelDraw(ctx context.Context, drawId int) error                               // Отмена тиража, все деньги возвращаются клиентам
+	SetDrawSaleDate(ctx context.Context, drawId int, begin time.Time) error         // Установка времени начала продажи билетов
+	SetDrawStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
+	ListActiveDraw(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
+	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
+	StoreTicket(ctx context.Context, ticket *models.Ticket) error                   // Сохранить билет в хранилище
+	StoreTickets(ctx context.Context, tickets []*models.Ticket) error               // Сохранить список билетов в хранилище
+	LoadTickets(ctx context.Context, drawId int) ([]*models.Ticket, error)          // Получение списка билетов по идентификатору тиража
+	GetTicket(ctx context.Context, ticketId int) (*models.Ticket, error)            // Получение билета по его идентификатору
 }
 
 // LotteryService реализует интерфейс сервиса лотереи.

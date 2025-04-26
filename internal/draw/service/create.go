@@ -29,7 +29,7 @@ func (s *drawService) CreateDraw(ctx context.Context, draw *models.DrawInput) (i
 	}
 
 	// Создаём тираж в хранилище, получая идентификатор
-	drawId, err := s.repo.Create(ctx, drawQuery)
+	drawId, err := s.repo.CreateDraw(ctx, drawQuery)
 	if err != nil {
 		return -1, errors.Errorf("cannot create draw: %w", err)
 	}
