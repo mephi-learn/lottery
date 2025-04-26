@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (r *repository) Create(ctx context.Context, draw *models.DrawStore) (int, error) {
+func (r *repository) CreateDraw(ctx context.Context, draw *models.DrawStore) (int, error) {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return -1, errors.Errorf("authentificate need: %w", err)
@@ -27,7 +27,7 @@ func (r *repository) Create(ctx context.Context, draw *models.DrawStore) (int, e
 	return drawId, nil
 }
 
-func (r *repository) Get(ctx context.Context, drawId int) (*models.DrawStore, error) {
+func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error) {
 	draw := models.DrawStore{}
 	if err := r.db.QueryRowContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = $1", drawId).Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
@@ -40,7 +40,7 @@ func (r *repository) Get(ctx context.Context, drawId int) (*models.DrawStore, er
 	return &draw, nil
 }
 
-func (r *repository) Planned(ctx context.Context, drawId int) error {
+func (r *repository) PlannedDraw(ctx context.Context, drawId int) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -63,7 +63,7 @@ func (r *repository) Planned(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) Active(ctx context.Context, drawId int) error {
+func (r *repository) ActiveDrav(ctx context.Context, drawId int) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -86,7 +86,7 @@ func (r *repository) Active(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) Completed(ctx context.Context, drawId int) error {
+func (r *repository) CompletedDraw(ctx context.Context, drawId int) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -109,7 +109,7 @@ func (r *repository) Completed(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) Cancel(ctx context.Context, drawId int) error {
+func (r *repository) CancelDraw(ctx context.Context, drawId int) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -132,7 +132,7 @@ func (r *repository) Cancel(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) Failed(ctx context.Context, drawId int) error {
+func (r *repository) FailedDraw(ctx context.Context, drawId int) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -155,7 +155,7 @@ func (r *repository) Failed(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) SetSaleDate(ctx context.Context, drawId int, begin time.Time) error {
+func (r *repository) SetDrawSaleDate(ctx context.Context, drawId int, begin time.Time) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -178,7 +178,7 @@ func (r *repository) SetSaleDate(ctx context.Context, drawId int, begin time.Tim
 	return nil
 }
 
-func (r *repository) SetStartDate(ctx context.Context, drawId int, start time.Time) error {
+func (r *repository) SetDrawStartDate(ctx context.Context, drawId int, start time.Time) error {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return errors.Errorf("authentificate need: %w", err)
@@ -201,7 +201,7 @@ func (r *repository) SetStartDate(ctx context.Context, drawId int, start time.Ti
 	return nil
 }
 
-func (r *repository) ListActive(ctx context.Context) ([]models.DrawStore, error) {
+func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE status_id in ($1, $2)", models.DrawStatusPlanned, models.DrawStatusActive)
 	if err != nil {
 		return nil, err

@@ -1,107 +1,87 @@
 package storage
 
 import (
-	"context"
 	"database/sql"
-	"time"
+	"fmt"
+	"homework/pkg/log"
 
+	"github.com/go-errors/errors"
 	_ "github.com/lib/pq"
 )
 
-type Storage interface {
-	PingContext(ctx context.Context) error
-	Ping() error
-	Close() error
-	SetMaxIdleConns(n int)
-	SetMaxOpenConns(n int)
-	SetConnMaxLifetime(d time.Duration)
-	SetConnMaxIdleTime(d time.Duration)
-	Stats() sql.DBStats
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-	Prepare(query string) (*sql.Stmt, error)
-	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
-	Exec(query string, args ...any) (sql.Result, error)
-	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
-	Query(query string, args ...any) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
-	QueryRow(query string, args ...any) *sql.Row
-	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
-	Begin() (*sql.Tx, error)
-	Conn(ctx context.Context) (*sql.Conn, error)
+var _ Storage = (*storage)(nil)
+
+type Config struct {
+	Host     string `yaml:"host"     json:"host"`
+	Port     int    `yaml:"port"     json:"port"`
+	User     string `yaml:"user"     json:"user"`
+	Password string `yaml:"password" json:"password"`
+	Database string `yaml:"database" json:"database"`
+	Schema   string `yaml:"schema"   json:"schema"`
 }
 
-func (r *storage) PingContext(ctx context.Context) error {
-	return r.postgres.PingContext(ctx)
+// Option позволяет настроить репозиторий добавлением новых функциональных опций.
+type Option func(*storage) error
+
+type storage struct {
+	postgres struct {
+		*Config
+		*sql.DB
+	}
+
+	log log.Logger
 }
 
-func (r *storage) Ping() error {
-	return r.postgres.Ping()
+// NewStorage создаёт объект репозитория, который должен удовлетворять требованиям сервисов.
+func NewStorage(opts ...Option) (*storage, error) {
+	var st storage
+
+	for _, opt := range opts {
+		if err := opt(&st); err != nil {
+			return nil, errors.Errorf("apply option: %w", err)
+		}
+	}
+
+	if st.postgres.Config == nil {
+		return nil, errors.Errorf("no config")
+	}
+
+	// st.ValidateConfig()
+
+	if st.log == nil {
+		return nil, errors.Errorf("no logger provided")
+	}
+
+	var err error
+	config := st.postgres.Config
+	schema := ""
+	if config.Schema != "" {
+		schema = "search_path=" + config.Schema
+	}
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s %s sslmode=disable", config.Host, config.Port, config.User, config.Password, config.Database, schema)
+	st.postgres.DB, err = sql.Open("postgres", psqlInfo)
+	if err != nil {
+		return nil, errors.Errorf("unable create storage: %w", err)
+	}
+
+	err = st.postgres.DB.Ping()
+	if err != nil {
+		return nil, errors.Errorf("unable create session: %w", err)
+	}
+
+	return &st, nil
 }
 
-func (r *storage) Close() error {
-	return r.postgres.Close()
+func WithLogger(logger log.Logger) Option {
+	return func(r *storage) error {
+		r.log = logger
+		return nil
+	}
 }
 
-func (r *storage) SetMaxIdleConns(n int) {
-	r.postgres.SetMaxIdleConns(n)
-}
-
-func (r *storage) SetMaxOpenConns(n int) {
-	r.postgres.SetMaxOpenConns(n)
-}
-
-func (r *storage) SetConnMaxLifetime(d time.Duration) {
-	r.postgres.SetConnMaxLifetime(d)
-}
-
-func (r *storage) SetConnMaxIdleTime(d time.Duration) {
-	r.postgres.SetConnMaxIdleTime(d)
-}
-
-func (r *storage) Stats() sql.DBStats {
-	return r.postgres.Stats()
-}
-
-func (r *storage) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
-	return r.postgres.PrepareContext(ctx, query)
-}
-
-func (r *storage) Prepare(query string) (*sql.Stmt, error) {
-	return r.postgres.Prepare(query)
-}
-
-func (r *storage) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	return r.postgres.ExecContext(ctx, query, args...)
-}
-
-func (r *storage) Exec(query string, args ...any) (sql.Result, error) {
-	return r.postgres.Exec(query, args...)
-}
-
-func (r *storage) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	return r.postgres.QueryContext(ctx, query, args...)
-}
-
-func (r *storage) Query(query string, args ...any) (*sql.Rows, error) {
-	return r.postgres.Query(query, args...)
-}
-
-func (r *storage) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
-	return r.postgres.QueryRowContext(ctx, query, args...)
-}
-
-func (r *storage) QueryRow(query string, args ...any) *sql.Row {
-	return r.postgres.QueryRow(query, args...)
-}
-
-func (r *storage) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
-	return r.postgres.BeginTx(ctx, opts)
-}
-
-func (r *storage) Begin() (*sql.Tx, error) {
-	return r.postgres.Begin()
-}
-
-func (r *storage) Conn(ctx context.Context) (*sql.Conn, error) {
-	return r.postgres.Conn(ctx)
+func WithConfig(config Config) Option {
+	return func(r *storage) error {
+		r.postgres.Config = &config
+		return nil
+	}
 }

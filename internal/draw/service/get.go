@@ -7,7 +7,7 @@ import (
 )
 
 func (s *drawService) GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error) {
-	draw, err := s.repo.Get(ctx, drawId)
+	draw, err := s.repo.GetDraw(ctx, drawId)
 	if err != nil {
 		return nil, errors.Errorf("failed to get draw: %w", err)
 	}
