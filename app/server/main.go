@@ -77,6 +77,8 @@ func main() {
 
 	var lottery536 *models.Lottery536
 	lotteryService.RegisterLottery(lottery536)
+	var lottery645 *models.Lottery645
+	lotteryService.RegisterLottery(lottery645)
 
 	// Родительский логгер для подсистем внутри сервиса draw.
 	drawlog := serverlog.WithGroup("draw")

@@ -11,37 +11,37 @@ import (
 )
 
 const (
-	l536id                = "5from36"
-	l535combinationLength = 5
-	l536minAllowDigit     = 1
-	k536maxAllowDigit     = 36
+	l645id                = "6from45"
+	l645combinationLength = 6
+	l645minAllowDigit     = 1
+	l645maxAllowDigit     = 45
 )
 
-type lottery536Ticket struct {
+type lottery645Ticket struct {
 	Id          int
 	Status      TicketStatus
 	DrawId      int
 	Combination []int
 }
-type Lottery536 struct {
+type Lottery645 struct {
 	notTemplate bool
-	Tickets     []*lottery536Ticket
+	Tickets     []*lottery645Ticket
 }
 
-func (l *Lottery536) Name() string {
-	return "5 из 36"
+func (l *Lottery645) Name() string {
+	return "6 из 45"
 }
 
-func (l *Lottery536) Type() string {
-	return l536id
+func (l *Lottery645) Type() string {
+	return l645id
 }
 
-func (l *Lottery536) Create() Lottery {
-	return &Lottery536{notTemplate: true}
+func (l *Lottery645) Create() Lottery {
+	return &Lottery645{notTemplate: true}
 }
 
 // AddTickets добавляет билет в лотерею
-func (l *Lottery536) AddTickets(tickets []*Ticket) error {
+func (l *Lottery645) AddTickets(tickets []*Ticket) error {
 	// Не даём использовать заготовку
 	if !l.notTemplate {
 		return errors.New("use template")
@@ -58,20 +58,20 @@ func (l *Lottery536) AddTickets(tickets []*Ticket) error {
 	return nil
 }
 
-func (l *Lottery536) CreateTickets(num int, drawId int) ([]*Ticket, error) {
+func (l *Lottery645) CreateTickets(num int, drawId int) ([]*Ticket, error) {
 	// Не даём использовать заготовку
 	if !l.notTemplate {
 		return nil, errors.New("use template")
 	}
 
-	newTickets := make([]*lottery536Ticket, 0, num)
-	maxDigitIndex := big.NewInt(k536maxAllowDigit - 1)
+	newTickets := make([]*lottery645Ticket, 0, num)
+	maxDigitIndex := big.NewInt(l645maxAllowDigit - 1)
 	for range num {
 
 		// Создаём уникальную комбинацию чисел
-		combination := make([]int, l535combinationLength)
+		combination := make([]int, l645combinationLength)
 		for l.validateCombination(combination) != nil || !l.checkUniqCombination(combination, newTickets...) {
-			for i := range l535combinationLength {
+			for i := range l645combinationLength {
 				randomNumber, err := rand.Int(rand.Reader, maxDigitIndex)
 				if err != nil {
 					return nil, errors.Errorf("failed to create combination: %w", err)
@@ -80,7 +80,7 @@ func (l *Lottery536) CreateTickets(num int, drawId int) ([]*Ticket, error) {
 			}
 		}
 
-		newTickets = append(newTickets, &lottery536Ticket{Status: TicketStatusReady, DrawId: drawId, Combination: combination})
+		newTickets = append(newTickets, &lottery645Ticket{Status: TicketStatusReady, DrawId: drawId, Combination: combination})
 	}
 
 	// Конвертируем список билетов из внутреннего формата во внешний
@@ -93,7 +93,7 @@ func (l *Lottery536) CreateTickets(num int, drawId int) ([]*Ticket, error) {
 }
 
 // Преобразует билет из общего формата во внутренний
-func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
+func (l *Lottery645) fromTicket(rawTicket *Ticket) (*lottery645Ticket, error) {
 	data, err := base64.StdEncoding.DecodeString(rawTicket.Data)
 	if err != nil {
 		return nil, errors.New("unknown decode ticket data")
@@ -104,11 +104,11 @@ func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 		return nil, errors.New("unknown ticket format")
 	}
 
-	if len(split[1]) != l535combinationLength*3-1 {
+	if len(split[1]) != l645combinationLength*3-1 {
 		return nil, errors.New("invalid ticket combination length")
 	}
 
-	if split[0] != l536id {
+	if split[0] != l645id {
 		return nil, errors.New("unknown ticket type")
 	}
 
@@ -126,7 +126,7 @@ func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 		return nil, errors.New("invalid ticket combination")
 	}
 
-	return &lottery536Ticket{
+	return &lottery645Ticket{
 		Id:          rawTicket.Id,
 		Status:      rawTicket.Status,
 		DrawId:      rawTicket.DrawId,
@@ -135,12 +135,12 @@ func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 }
 
 // Преобразует билет из внутреннего формата в общий
-func (l *Lottery536) toTicket(rawTicket *lottery536Ticket) *Ticket {
+func (l *Lottery645) toTicket(rawTicket *lottery645Ticket) *Ticket {
 	digits := make([]string, len(rawTicket.Combination))
 	for i, digit := range rawTicket.Combination {
 		digits[i] = fmt.Sprintf("%02d", digit)
 	}
-	combination := l536id + ";" + strings.Join(digits, ",")
+	combination := l645id + ";" + strings.Join(digits, ",")
 
 	return &Ticket{
 		Id:     rawTicket.Id,
@@ -151,8 +151,8 @@ func (l *Lottery536) toTicket(rawTicket *lottery536Ticket) *Ticket {
 }
 
 // Производит проверку на соответствие комбинации цифр правилам лотереи
-func (l *Lottery536) validateCombination(combination []int) error {
-	if len(combination) != l535combinationLength {
+func (l *Lottery645) validateCombination(combination []int) error {
+	if len(combination) != l645combinationLength {
 		return errors.New("invalid combination length")
 	}
 
@@ -160,7 +160,7 @@ func (l *Lottery536) validateCombination(combination []int) error {
 
 	// Проверяем что все числа из комбинации укладываются в допустимый диапазон
 	for _, digit := range combination {
-		if digit < l536minAllowDigit || digit > k536maxAllowDigit {
+		if digit < l645minAllowDigit || digit > l645maxAllowDigit {
 			return errors.New("invalid digit in combination: " + strconv.Itoa(digit))
 		}
 		uniq[digit] = struct{}{}
@@ -175,7 +175,7 @@ func (l *Lottery536) validateCombination(combination []int) error {
 }
 
 // Проверяет, уникальна ли комбинация среди уже существующих билетов
-func (l *Lottery536) checkUniqCombination(combination []int, newTickets ...*lottery536Ticket) bool {
+func (l *Lottery645) checkUniqCombination(combination []int, newTickets ...*lottery645Ticket) bool {
 	// Проверяем комбинацию на уникальность по существующим билетам
 	for _, ticket := range l.Tickets {
 		found := true
