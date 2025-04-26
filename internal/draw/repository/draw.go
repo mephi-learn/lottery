@@ -41,15 +41,6 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawStore
 }
 
 func (r *repository) PlannedDraw(ctx context.Context, drawId int) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
 	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusPlanned, drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw status: %w", err)
@@ -63,16 +54,7 @@ func (r *repository) PlannedDraw(ctx context.Context, drawId int) error {
 	return nil
 }
 
-func (r *repository) ActiveDrav(ctx context.Context, drawId int) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
+func (r *repository) ActiveDraw(ctx context.Context, drawId int) error {
 	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusActive, drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw status: %w", err)
@@ -87,15 +69,6 @@ func (r *repository) ActiveDrav(ctx context.Context, drawId int) error {
 }
 
 func (r *repository) CompletedDraw(ctx context.Context, drawId int) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
 	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusCompleted, drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw status: %w", err)
@@ -110,15 +83,6 @@ func (r *repository) CompletedDraw(ctx context.Context, drawId int) error {
 }
 
 func (r *repository) CancelDraw(ctx context.Context, drawId int) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
 	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusCanceled, drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw status: %w", err)
@@ -133,15 +97,6 @@ func (r *repository) CancelDraw(ctx context.Context, drawId int) error {
 }
 
 func (r *repository) FailedDraw(ctx context.Context, drawId int) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
 	result, err := r.db.ExecContext(ctx, "update draws set status_id = $1 where id = $2", models.DrawStatusFailed, drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw status: %w", err)

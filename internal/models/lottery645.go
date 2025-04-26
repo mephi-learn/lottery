@@ -58,7 +58,7 @@ func (l *Lottery645) AddTickets(tickets []*Ticket) error {
 	return nil
 }
 
-func (l *Lottery645) CreateTickets(num int, drawId int) ([]*Ticket, error) {
+func (l *Lottery645) CreateTickets(drawId int, num int) ([]*Ticket, error) {
 	// Не даём использовать заготовку
 	if !l.notTemplate {
 		return nil, errors.New("use template")
@@ -87,6 +87,29 @@ func (l *Lottery645) CreateTickets(num int, drawId int) ([]*Ticket, error) {
 	result := make([]*Ticket, len(newTickets))
 	for i, ticket := range newTickets {
 		result[i] = l.toTicket(ticket)
+	}
+
+	return result, nil
+}
+
+func (l *Lottery645) Drawing(combination []int) (map[string][]*Ticket, error) {
+	if len(combination) != l645combinationLength {
+		return nil, errors.New("invalid combination")
+	}
+
+	result := map[string][]*Ticket{}
+	for _, ticket := range l.Tickets {
+		matched := l645combinationLength
+		for i := range combination {
+			if combination[i] != ticket.Combination[i] {
+				matched = i
+				break
+			}
+		}
+		if matched > 0 {
+			value := strconv.Itoa(matched)
+			result[value] = append(result[value], l.toTicket(ticket))
+		}
 	}
 
 	return result, nil
