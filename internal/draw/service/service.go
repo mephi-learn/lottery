@@ -11,7 +11,11 @@ import (
 // Repository реализует интерфейс репозитория тиража.
 type Repository interface {
 	CreateDraw(ctx context.Context, draw *models.DrawStore) (drawId int, err error) // Создание тиража
+	PlannedDraw(ctx context.Context, drawId int) error                              // Перевод тиража в статус планирования, можно покупать билеты
+	ActiveDraw(ctx context.Context, drawId int) error                               // Перевод тиража в статус активного, Билеты покупать нельзя, но можно проводить розыгрыши
+	CompletedDraw(ctx context.Context, drawId int) error                            // Перевод тиража в статус завершённого, можно раздавать призы и рассылать выигрыши
 	CancelDraw(ctx context.Context, drawId int) error                               // Отмена тиража, все деньги возвращаются клиентам
+	FailedDraw(ctx context.Context, drawId int) error                               // Перевод тиража в статус испорченного, все деньги возвращаются клиентам
 	SetDrawSaleDate(ctx context.Context, drawId int, begin time.Time) error         // Установка времени начала продажи билетов
 	SetDrawStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
 	ListActiveDraw(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
