@@ -15,7 +15,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./config.yaml:/app/config.yaml:ro
+      - ./docker_config.yaml:/app/config.yaml:ro
     entrypoint: ["/app/app", "-config", "/app/config.yaml"]
   db:
     image: postgres:16
