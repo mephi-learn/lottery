@@ -2,7 +2,7 @@ package models
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"homework/pkg/errors"
 	"math/big"
@@ -23,129 +23,153 @@ type lottery536Ticket struct {
 	DrawId      int
 	Combination []int
 }
+
 type Lottery536 struct {
-	notTemplate bool
-	Tickets     []*lottery536Ticket
+	tickets []*Ticket
+}
+
+func NewLottery536() *Lottery536 {
+	return &Lottery536{
+		tickets: make([]*Ticket, 0),
+	}
+}
+
+func (l *Lottery536) Type() string {
+	return "536"
 }
 
 func (l *Lottery536) Name() string {
 	return "5 из 36"
 }
 
-func (l *Lottery536) Type() string {
-	return l536id
-}
-
 func (l *Lottery536) Create() Lottery {
-	return &Lottery536{notTemplate: true}
+	return NewLottery536()
 }
 
-// AddTickets добавляет билет в лотерею
 func (l *Lottery536) AddTickets(tickets []*Ticket) error {
-	// Не даём использовать заготовку
-	if !l.notTemplate {
-		return errors.New("use template")
+	for _, ticket := range tickets {
+		if err := l.validateTicket(ticket); err != nil {
+			return err
+		}
+		l.tickets = append(l.tickets, ticket)
+	}
+	return nil
+}
+
+func (l *Lottery536) CreateTickets(drawId int, num int) ([]*Ticket, error) {
+	tickets := make([]*Ticket, 0, num)
+	for i := 0; i < num; i++ {
+		ticket, err := l.generateTicket(drawId)
+		if err != nil {
+			return nil, err
+		}
+		tickets = append(tickets, ticket)
+	}
+	return tickets, nil
+}
+
+func (l *Lottery536) Drawing(combination []int) (map[string][]*Ticket, error) {
+	if len(combination) != 5 {
+		return nil, errors.Errorf("invalid combination length: %d", len(combination))
 	}
 
-	for _, rawTicket := range tickets {
-		ticket, err := l.fromTicket(rawTicket)
-		if err != nil {
-			return errors.Errorf("failed convert ticket: %w", err)
+	result := make(map[string][]*Ticket)
+	for _, ticket := range l.tickets {
+		matches := l.countMatches(ticket, combination)
+		if matches >= 3 {
+			result[strconv.Itoa(matches)] = append(result[strconv.Itoa(matches)], ticket)
 		}
-		l.Tickets = append(l.Tickets, ticket)
+	}
+	return result, nil
+}
+
+func (l *Lottery536) validateTicket(ticket *Ticket) error {
+	var numbers []int
+	if err := json.Unmarshal([]byte(ticket.Data), &numbers); err != nil {
+		return errors.Errorf("invalid ticket data: %w", err)
+	}
+
+	if len(numbers) != 5 {
+		return errors.Errorf("invalid numbers count: %d", len(numbers))
+	}
+
+	unique := make(map[int]bool)
+	for _, num := range numbers {
+		if num < 1 || num > 36 {
+			return errors.Errorf("invalid number: %d", num)
+		}
+		if unique[num] {
+			return errors.Errorf("duplicate number: %d", num)
+		}
+		unique[num] = true
 	}
 
 	return nil
 }
 
-func (l *Lottery536) CreateTickets(drawId int, num int) ([]*Ticket, error) {
-	// Не даём использовать заготовку
-	if !l.notTemplate {
-		return nil, errors.New("use template")
-	}
+func (l *Lottery536) generateTicket(drawId int) (*Ticket, error) {
+	numbers := make([]int, 0, 5)
+	unique := make(map[int]bool)
 
-	newTickets := make([]*lottery536Ticket, 0, num)
-	maxDigitIndex := big.NewInt(k536maxAllowDigit - 1)
-	for range num {
-
-		// Создаём уникальную комбинацию чисел
-		combination := make([]int, l535combinationLength)
-		for l.validateCombination(combination) != nil || !l.checkUniqCombination(combination, newTickets...) {
-			for i := range l535combinationLength {
-				randomNumber, err := rand.Int(rand.Reader, maxDigitIndex)
-				if err != nil {
-					return nil, errors.Errorf("failed to create combination: %w", err)
-				}
-				combination[i] = int(randomNumber.Int64()) + 1
-			}
+	for len(numbers) < 5 {
+		num, err := rand.Int(rand.Reader, big.NewInt(36))
+		if err != nil {
+			return nil, errors.Errorf("failed to generate random number: %w", err)
 		}
-
-		newTickets = append(newTickets, &lottery536Ticket{Status: TicketStatusReady, DrawId: drawId, Combination: combination})
+		n := int(num.Int64()) + 1
+		if !unique[n] {
+			numbers = append(numbers, n)
+			unique[n] = true
+		}
 	}
 
-	// Конвертируем список билетов из внутреннего формата во внешний
-	result := make([]*Ticket, len(newTickets))
-	for i, ticket := range newTickets {
-		result[i] = l.toTicket(ticket)
+	data, err := json.Marshal(numbers)
+	if err != nil {
+		return nil, errors.Errorf("failed to marshal numbers: %w", err)
 	}
 
-	return result, nil
+	return &Ticket{
+		DrawId: drawId,
+		Status: TicketStatusReady,
+		Data:   string(data),
+	}, nil
 }
 
-func (l *Lottery536) Drawing(combination []int) (map[string][]*Ticket, error) {
-	if len(combination) != l535combinationLength {
-		return nil, errors.New("invalid combination")
+func (l *Lottery536) countMatches(ticket *Ticket, combination []int) int {
+	var numbers []int
+	if err := json.Unmarshal([]byte(ticket.Data), &numbers); err != nil {
+		return 0
 	}
 
-	result := map[string][]*Ticket{}
-	for _, ticket := range l.Tickets {
-		matched := l535combinationLength
-		for i := range combination {
-			if combination[i] != ticket.Combination[i] {
-				matched = i
+	matches := 0
+	for _, num := range numbers {
+		for _, comb := range combination {
+			if num == comb {
+				matches++
 				break
 			}
 		}
-		if matched > 0 {
-			value := strconv.Itoa(matched)
-			result[value] = append(result[value], l.toTicket(ticket))
-		}
 	}
-
-	return result, nil
+	return matches
 }
 
 // Преобразует билет из общего формата во внутренний
 func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
-	data, err := base64.StdEncoding.DecodeString(rawTicket.Data)
+	data, err := json.Marshal(rawTicket.Data)
 	if err != nil {
-		return nil, errors.New("unknown decode ticket data")
+		return nil, errors.Errorf("failed to marshal ticket data: %w", err)
 	}
 
-	split := strings.SplitN(string(data), ";", 2)
-	if len(split) != 2 {
-		return nil, errors.New("unknown ticket format")
+	var combination []int
+	if err := json.Unmarshal(data, &combination); err != nil {
+		return nil, errors.Errorf("failed to unmarshal ticket data: %w", err)
 	}
 
-	if len(split[1]) != l535combinationLength*3-1 {
-		return nil, errors.New("invalid ticket combination length")
+	if len(combination) != l535combinationLength {
+		return nil, errors.Errorf("invalid ticket combination length: %d", len(combination))
 	}
 
-	if split[0] != l536id {
-		return nil, errors.New("unknown ticket type")
-	}
-
-	rawNumbers := strings.Split(split[1], ",")
-	numbers := make([]int, len(rawNumbers))
-	for i, rawNumber := range rawNumbers {
-		number, err := strconv.Atoi(rawNumber)
-		if err != nil {
-			return nil, errors.Errorf("invalid combination number: %w", err)
-		}
-		numbers[i] = number
-	}
-
-	if err = l.validateCombination(numbers); err != nil {
+	if err = l.validateCombination(combination); err != nil {
 		return nil, errors.New("invalid ticket combination")
 	}
 
@@ -153,7 +177,7 @@ func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 		Id:          rawTicket.Id,
 		Status:      rawTicket.Status,
 		DrawId:      rawTicket.DrawId,
-		Combination: numbers,
+		Combination: combination,
 	}, nil
 }
 
@@ -163,13 +187,13 @@ func (l *Lottery536) toTicket(rawTicket *lottery536Ticket) *Ticket {
 	for i, digit := range rawTicket.Combination {
 		digits[i] = fmt.Sprintf("%02d", digit)
 	}
-	combination := l536id + ";" + strings.Join(digits, ",")
+	combination := strings.Join(digits, ",")
 
 	return &Ticket{
 		Id:     rawTicket.Id,
 		Status: rawTicket.Status,
 		DrawId: rawTicket.DrawId,
-		Data:   base64.StdEncoding.EncodeToString([]byte(combination)),
+		Data:   combination,
 	}
 }
 
@@ -200,10 +224,14 @@ func (l *Lottery536) validateCombination(combination []int) error {
 // Проверяет, уникальна ли комбинация среди уже существующих билетов
 func (l *Lottery536) checkUniqCombination(combination []int, newTickets ...*lottery536Ticket) bool {
 	// Проверяем комбинацию на уникальность по существующим билетам
-	for _, ticket := range l.Tickets {
+	for _, ticket := range l.tickets {
+		var numbers []int
+		if err := json.Unmarshal([]byte(ticket.Data), &numbers); err != nil {
+			continue
+		}
 		found := true
-		for i := range ticket.Combination {
-			if combination[i] != ticket.Combination[i] {
+		for i := range numbers {
+			if combination[i] != numbers[i] {
 				found = false
 				break
 			}

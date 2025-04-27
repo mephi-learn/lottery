@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"homework/internal/models"
+	"homework/internal/ticket/service"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"time"
@@ -35,10 +36,10 @@ type LotteryService interface {
 type DrawOption func(*drawService) error
 
 type drawService struct {
-	repo    Repository
-	lottery LotteryService
-
-	log log.Logger
+	repo          Repository
+	lottery       LotteryService
+	ticketService service.TicketService
+	log           log.Logger
 }
 
 // NewDrawService возвращает имплементацию сервиса для тиража.
@@ -77,6 +78,13 @@ func WithDrawRepository(repo Repository) DrawOption {
 func WithLotteryService(lottery LotteryService) DrawOption {
 	return func(r *drawService) error {
 		r.lottery = lottery
+		return nil
+	}
+}
+
+func WithTicketService(ticketService service.TicketService) DrawOption {
+	return func(r *drawService) error {
+		r.ticketService = ticketService
 		return nil
 	}
 }

@@ -7,16 +7,6 @@ import (
 )
 
 func (s *drawService) CreateTickets(ctx context.Context, drawId int, num int) ([]*models.Ticket, error) {
-	// Читаем существующие билеты конкретного тиража из БД, генерирую на основе правил новые билеты, сохраняю их и возвращаю списком
-	// Билеты не должны повторять существующие комбинации
-
-	// Считываем существующие билеты из БД
-	ticketsIn, err := s.repo.LoadTickets(ctx, drawId)
-	if err != nil {
-		s.log.ErrorContext(ctx, "failed load tickets from repository", "error", err)
-		return nil, errors.Errorf("failed load tickets from repository: %w", err)
-	}
-
 	// Получаем информацию по тиражу
 	draw, err := s.repo.GetDraw(ctx, drawId)
 	if err != nil {
@@ -24,30 +14,17 @@ func (s *drawService) CreateTickets(ctx context.Context, drawId int, num int) ([
 		return nil, errors.Errorf("failed load draw info: %w", err)
 	}
 
-	// Создаём лотерею по её типу
-	lotteryType, err := s.lottery.LotteryByType(draw.LotteryType)
+	// Генерируем билеты через ticketService
+	tickets, err := s.ticketService.CreateTickets(drawId, draw.LotteryType, num)
 	if err != nil {
-		s.log.ErrorContext(ctx, "unknown lottery type", "error", err)
-		return nil, errors.Errorf("unknown lottery type: %w", err)
-	}
-	lottery := lotteryType.Create()
-
-	// Добавляем полученные билеты в лотерею
-	if err = lottery.AddTickets(ticketsIn); err != nil {
-		s.log.ErrorContext(ctx, "failed add stored tickets to lottery", "error", err)
-		return nil, errors.Errorf("failed add stored tickets to lottery: %w", err)
+		s.log.ErrorContext(ctx, "failed to create tickets", "error", err)
+		return nil, errors.Errorf("failed to create tickets: %w", err)
 	}
 
-	// Генерируем необходимое количество билетов
-	tickets, err := lottery.CreateTickets(drawId, num)
-	if err != nil {
-		s.log.ErrorContext(ctx, "failed to create new tickets in lottery", "error", err)
-		return nil, errors.Errorf("failed to create new tickets in lottery: %w", err)
-	}
-
+	// Сохраняем билеты в репозиторий
 	if err = s.repo.StoreTickets(ctx, tickets); err != nil {
-		s.log.ErrorContext(ctx, "failed to store new tickets", "error", err)
-		return nil, errors.Errorf("failed to store new tickets: %w", err)
+		s.log.ErrorContext(ctx, "failed to store tickets", "error", err)
+		return nil, errors.Errorf("failed to store tickets: %w", err)
 	}
 
 	return tickets, nil

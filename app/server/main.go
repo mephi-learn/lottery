@@ -18,6 +18,7 @@ import (
 	"homework/pkg/log"
 	"os"
 	"os/signal"
+	ticketservice "homework/internal/ticket/service"
 )
 
 func main() {
@@ -89,11 +90,18 @@ func main() {
 		drawrepository.WithLogger(drawlog.WithGroup("repository")),
 	))
 
+	// Инициализация сервиса Ticket.
+	ticketService := start(ticketservice.NewTicketService(
+		ticketservice.WithLogger(drawlog.WithGroup("ticket")),
+		ticketservice.WithLotteryService(lotteryService),
+	))
+
 	// Инициализация сервиса Draw.
 	drawService := start(drawservice.NewDrawService(
 		drawservice.WithDrawLogger(drawlog.WithGroup("service")),
 		drawservice.WithDrawRepository(drawRepo),
 		drawservice.WithLotteryService(lotteryService),
+		drawservice.WithTicketService(ticketService),
 	))
 
 	// Инициализация контроллера Draw.
