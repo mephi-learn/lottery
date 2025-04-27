@@ -15,10 +15,10 @@ import (
 	"homework/internal/models"
 	"homework/internal/server"
 	"homework/internal/storage"
+	ticketservice "homework/internal/ticket/service"
 	"homework/pkg/log"
 	"os"
 	"os/signal"
-	ticketservice "homework/internal/ticket/service"
 )
 
 func main() {

@@ -3,9 +3,9 @@ package service
 import (
 	"testing"
 
+	"errors"
 	"homework/internal/models"
 	"homework/pkg/log"
-	"errors"
 )
 
 type mockLotteryService struct {
