@@ -12,6 +12,9 @@ import (
 	drawrepository "homework/internal/draw/repository"
 	drawservice "homework/internal/draw/service"
 	lotteryservice "homework/internal/lottery/service"
+	resultcontroller "homework/internal/result/controller"
+	resultservice "homework/internal/result/service"
+
 	"homework/internal/models"
 	"homework/internal/server"
 	"homework/internal/storage"
@@ -102,11 +105,27 @@ func main() {
 		drawcontroller.WithService(drawService),
 	))
 
+	resultlog := serverlog.WithGroup("result")
+
+		// Инициализация сервиса DrawResult.
+		resultService := start(resultservice.NewResultService(
+			resultservice.WithDrawLogger(resultlog.WithGroup("service")),
+			// drawservice.WithDrawRepository(drawRepo),
+			// drawservice.WithLotteryService(lotteryService),
+		))
+
+		// Инициализация контроллера Draw.
+	resultController := start(resultcontroller.NewHandler(
+		resultcontroller.WithLogger(resultlog.WithGroup("controller")),
+		resultcontroller.WithService(resultService),
+	))
+
 	// Инициализация HTTP сервера.
 	http := start(server.New(cfg.Server.HTTP,
 		server.WithLogger(serverlog.WithGroup("server")),
 		server.WithController(authController),
 		server.WithController(drawController),
+		server.WithController(resultController),
 	))
 
 	go manager.run(http.ListenAndServe)
