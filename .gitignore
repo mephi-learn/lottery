@@ -1,2 +1,5 @@
 .idea
 config.yaml
+mise.toml
+.vscode
+schema.sql
