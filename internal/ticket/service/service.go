@@ -67,5 +67,9 @@ func (s *ticketService) CreateTickets(drawId int, lotteryType string, num int) (
 		return nil, errors.Errorf("failed to create tickets: %w", err)
 	}
 
+	for _, ticket := range tickets {
+		s.log.Debug("created ticket", "drawId", ticket.DrawId, "status", ticket.Status)
+	}
+
 	return tickets, nil
 }
