@@ -1,0 +1,49 @@
+package controller
+
+import (
+	"encoding/json"
+	"fmt"
+	"homework/internal/models"
+	"net/http"
+	"strconv"
+)
+
+type listTicketsResponse struct {
+	models.Ticket
+
+	Status string `json:"status"`
+}
+
+func (h *handler) ListTickets(w http.ResponseWriter, r *http.Request) {
+	user, err := models.UserFromContext(r.Context())
+	if err != nil {
+		http.Error(w, "authenticate need", http.StatusBadRequest)
+		return
+	}
+
+	ticketId, err := strconv.Atoi(r.PathValue("ticketId"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("ticketId")), http.StatusBadRequest)
+		return
+	}
+
+	// ticket, err := h.service.GetTicketById(r.Context(), ticketId)
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("failed get ticket: %s", err.Error()), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	response := listTicketsResponse{
+		Ticket: *ticket,
+		Status: ticket.Status.String(),
+	}
+
+	out, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(out))
+}
