@@ -62,5 +62,4 @@ func (h *handler) WithRouter(mux *http.ServeMux) {
 
 	// TODO: USER получает список своих билетов
 	// mux.Handle("GET /api/tickets", auth.Authenticated(h.ListTickets))
-
 }

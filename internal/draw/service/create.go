@@ -8,7 +8,6 @@ import (
 
 // CreateDraw создание тиража.
 func (s *drawService) CreateDraw(ctx context.Context, draw *models.DrawInput) (int, error) {
-
 	// Проверки корректности статуса
 	status := models.DrawStatusFromString(draw.Status)
 	if status == models.DrawStatusUnknown {

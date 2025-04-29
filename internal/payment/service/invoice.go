@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Регистрарация инвойса
+// Регистрарация инвойса.
 func RegisterInvoce(w http.ResponseWriter, r *http.Request) {
 	var invoice *models.Invoice
 	err := json.NewDecoder(r.Body).Decode(&invoice)

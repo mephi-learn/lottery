@@ -59,28 +59,3 @@ func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 
 	_, _ = w.Write(out)
 }
-
-func (h *handler) Generate(w http.ResponseWriter, r *http.Request) {
-	drawId, err := strconv.Atoi(r.PathValue("draw"))
-	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("draw")), http.StatusBadRequest)
-		return
-	}
-
-	num, err := strconv.Atoi(r.PathValue("num"))
-	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid num: %s", r.PathValue("num")), http.StatusBadRequest)
-		return
-	}
-
-	list, err := h.service.CreateTickets(r.Context(), drawId, num)
-
-	out, err := json.Marshal(list)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(out)
-}

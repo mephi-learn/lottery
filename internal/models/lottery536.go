@@ -40,7 +40,7 @@ func (l *Lottery536) Create() Lottery {
 	return &Lottery536{notTemplate: true}
 }
 
-// AddTickets добавляет билет в лотерею
+// AddTickets добавляет билет в лотерею.
 func (l *Lottery536) AddTickets(tickets []*Ticket) error {
 	// Не даём использовать заготовку
 	if !l.notTemplate {
@@ -115,7 +115,7 @@ func (l *Lottery536) Drawing(combination []int) (map[string][]*Ticket, error) {
 	return result, nil
 }
 
-// Преобразует билет из общего формата во внутренний
+// Преобразует билет из общего формата во внутренний.
 func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 	data, err := base64.StdEncoding.DecodeString(rawTicket.Data)
 	if err != nil {
@@ -157,7 +157,7 @@ func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 	}, nil
 }
 
-// Преобразует билет из внутреннего формата в общий
+// Преобразует билет из внутреннего формата в общий.
 func (l *Lottery536) toTicket(rawTicket *lottery536Ticket) *Ticket {
 	digits := make([]string, len(rawTicket.Combination))
 	for i, digit := range rawTicket.Combination {
@@ -173,7 +173,7 @@ func (l *Lottery536) toTicket(rawTicket *lottery536Ticket) *Ticket {
 	}
 }
 
-// Производит проверку на соответствие комбинации цифр правилам лотереи
+// Производит проверку на соответствие комбинации цифр правилам лотереи.
 func (l *Lottery536) validateCombination(combination []int) error {
 	if len(combination) != l535combinationLength {
 		return errors.New("invalid combination length")
@@ -197,7 +197,7 @@ func (l *Lottery536) validateCombination(combination []int) error {
 	return nil
 }
 
-// Проверяет, уникальна ли комбинация среди уже существующих билетов
+// Проверяет, уникальна ли комбинация среди уже существующих билетов.
 func (l *Lottery536) checkUniqCombination(combination []int, newTickets ...*lottery536Ticket) bool {
 	// Проверяем комбинацию на уникальность по существующим билетам
 	for _, ticket := range l.Tickets {
