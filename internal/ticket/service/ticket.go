@@ -11,7 +11,7 @@ func (s *ticketService) CreateTickets(ctx context.Context, drawId int, num int) 
 	// Билеты не должны повторять существующие комбинации
 
 	// Считываем существующие билеты из БД
-	ticketsIn, err := s.repo.LoadTickets(ctx, drawId)
+	ticketsIn, err := s.repo.LoadTicketsByDrawId(ctx, drawId)
 	if err != nil {
 		s.log.ErrorContext(ctx, "failed load tickets from repository", "error", err)
 		return nil, errors.Errorf("failed load tickets from repository: %w", err)
@@ -57,7 +57,7 @@ func (s *ticketService) ListDrawTickets(ctx context.Context, drawId int) ([]*mod
 	// Читаем существующие билеты конкретного тиража из БД и возвращаем списком
 
 	// Считываем существующие билеты из БД
-	tickets, err := s.repo.LoadTickets(ctx, drawId)
+	tickets, err := s.repo.LoadTicketsByDrawId(ctx, drawId)
 	if err != nil {
 		s.log.ErrorContext(ctx, "failed load tickets from repository", "error", err)
 		return nil, errors.Errorf("failed load tickets from repository: %w", err)
@@ -69,7 +69,7 @@ func (s *ticketService) ListDrawTickets(ctx context.Context, drawId int) ([]*mod
 func (s *ticketService) GetTicketById(ctx context.Context, ticketId int) (*models.Ticket, error) {
 	// Читаем существующий билет из БД и возвращаем его
 
-	ticket, err := s.repo.GetTicket(ctx, ticketId)
+	ticket, err := s.repo.GetTicketById(ctx, ticketId)
 	if err != nil {
 		s.log.ErrorContext(ctx, "failed load ticket from repository", "error", err)
 		return nil, errors.Errorf("failed load ticket from repository: %w", err)

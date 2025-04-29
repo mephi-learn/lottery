@@ -16,6 +16,7 @@ import (
 	"homework/internal/server"
 	"homework/internal/storage"
 	ticketcontroller "homework/internal/ticket/controller"
+	ticketrepository "homework/internal/ticket/repository"
 	ticketservice "homework/internal/ticket/service"
 	"homework/pkg/log"
 	"os"
@@ -106,10 +107,17 @@ func main() {
 
 	// Родительский логгер для подсистем внутри сервиса ticket.
 	ticketlog := serverlog.WithGroup("ticket")
+
+	// Инициализация репозитория Ticket.
+	ticketRepo := start(ticketrepository.NewRepository(
+		ticketrepository.WithStorage(st),
+		ticketrepository.WithLogger(ticketlog.WithGroup("repository")),
+	))
+
 	// Инициализация сервиса Ticket.
 	ticketService := start(ticketservice.NewTicketService(
 		ticketservice.WithTicketLogger(ticketlog.WithGroup("service")),
-		ticketservice.WithTicketRepository(drawRepo),
+		ticketservice.WithTicketRepository(ticketRepo),
 		ticketservice.WithLotteryService(lotteryService),
 		ticketservice.WithDrawService(drawService),
 	))

@@ -22,6 +22,7 @@ func (s *lotteryService) RegisterLottery(lottery models.Lottery) error {
 	}
 
 	s.list.list[name] = lottery
+
 	return nil
 }
 
