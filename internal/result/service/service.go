@@ -14,17 +14,10 @@ type LotteryService interface {
 
 // Repository реализует интерфейс репозитория результатов тиража.
 type Repository interface {
-	GetDraw(ctx context.Context, drawId int) (*models.DrawResultStore, error) // получение тиража
-	SaveWinCombination(ctx context.Context, drawId int, winCombination []int) error // сохранение выигрышной комбинации
+	GetDraw(ctx context.Context, drawId int) (*models.DrawResultStore, error)             // получение тиража
+	SaveWinCombination(ctx context.Context, drawId int, winCombination []int) error       // сохранение выигрышной комбинации
+	GetUserTicket(ctx context.Context, ticketId, userId int) (*models.TicketStore, error) // получение билета пользователя
 }
-
-// // ResultService реализует интерфейс сервиса результатов лотереи.
-// type ResultService interface {
-// 	GetDrawResults(ctx context.Context, drawId int) (int, error) // Получение выигрышной комбинации тиража.
-// 	// CheckTicketResult(ticketId int) (string, error) // Проверка результата билета.
-// 	// LotteryByName(name string) (models.Lottery, error)
-// 	// LotteryByType(name string) (models.Lottery, error)
-// }
 
 type DrawOption func(*resultService) error
 
@@ -32,7 +25,6 @@ type resultService struct {
 	repo    Repository
 	log     log.Logger
 	lottery LotteryService
-	// result  ResultService
 }
 
 // NewResultService возвращает имплементацию сервиса для получения результатов тиража.

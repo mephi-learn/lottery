@@ -21,11 +21,11 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 		FROM draws d
 			LEFT JOIN draw_results r ON r.draw_id = d.id
 		WHERE d.id = $1`, drawId).Scan(
-			&drawRes.Id,
-			&drawRes.DrawStatusId,
-			&drawRes.LotteryType,
-			&drawRes.WinCombination,
-			); err != nil {
+		&drawRes.Id,
+		&drawRes.DrawStatusId,
+		&drawRes.LotteryType,
+		&drawRes.WinCombination,
+	); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.Errorf("failed to get draw info: %w", err)
 		}
@@ -47,4 +47,24 @@ func (r *repository) SaveWinCombination(ctx context.Context, drawId int, winComb
 	}
 
 	return nil
+}
+
+func (r *repository) GetUserTicket(ctx context.Context, ticketId, userId int) (*models.TicketStore, error) {
+	ticket := models.TicketStore{}
+	if err := r.db.QueryRowContext(ctx, `
+		SELECT * FROM tickets WHERE id = $1 AND user_id = $2`, ticketId, userId).Scan(
+		&ticket.Id,
+		&ticket.StatusId,
+		&ticket.DrawId,
+		&ticket.Data,
+		&ticket.UserId,
+	); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.Errorf("failed to get ticket info: %w", err)
+		}
+
+		return nil, nil
+	}
+
+	return &ticket, nil
 }

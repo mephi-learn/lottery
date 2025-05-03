@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"homework/internal/auth"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"net/http"
@@ -42,13 +44,15 @@ func WithService(svc resultService) HandlerOption {
 }
 
 type resultService interface {
-	GetDrawResults(ctx context.Context, drawId int) (int, error)			// Получение выигрышной комбинации тиража.
-	GenerateDrawResults(ctx context.Context, drawId int) ([]int, error) // Генерация результатов тиража.
+	GetDrawResults(ctx context.Context, drawId int) ([]int, error)                             // Получение выигрышной комбинации тиража.
+	GenerateDrawResults(ctx context.Context, drawId int) ([]int, error)                        // Генерация результатов тиража.
+	CheckTicketResult(ctx context.Context, ticketId, userId int) (*models.TicketResult, error) // Проверка результата по номеру билета.
 }
 
 type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("GET /api/draws/{id}/results", http.HandlerFunc(h.GetDrawResults))
-	mux.Handle("PUT /api/draws/{id}/results/generate", http.HandlerFunc(h.GenerateDrawResults))
+	mux.Handle("PUT /api/draws/{id}/results/generate", auth.Authenticated(h.GenerateDrawResults))
+	mux.Handle("GET /api/tickets/{id}/check-result", auth.Authenticated(h.CheckTicketResult))
 }

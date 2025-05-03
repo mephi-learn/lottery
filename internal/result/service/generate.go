@@ -22,16 +22,9 @@ func (s *resultService) GenerateDrawResults(ctx context.Context, drawId int) ([]
 
 	// Check if the draw already has winning numbers
 	if draw.WinCombination != nil {
-		pqArray := draw.WinCombination
-
-		winningNumbersInt := make([]int, len(pqArray))
-	
-		for i, val64 := range pqArray {
-			winningNumbersInt[i] = int(val64)
-		}
-		return winningNumbersInt, nil
+		return GetWinCombSlice(draw.WinCombination), nil
 	}
-	
+
 	lottery, err := s.lottery.LotteryByType(draw.LotteryType)
 	if err != nil {
 		return make([]int, 0), errors.Errorf("failed to get lottery: %w", err)
@@ -39,17 +32,16 @@ func (s *resultService) GenerateDrawResults(ctx context.Context, drawId int) ([]
 
 	// Generate the winning numbers based on the lottery type
 	winningNumbers, err := lottery.GenerateWinningCombination(rand.Reader)
-	
+
 	if err != nil {
 		return make([]int, 0), errors.Errorf("failed to generate winning numbers: %w", err)
 	}
 
 	// save the draw result with the winning numbers
 	err = s.repo.SaveWinCombination(ctx, drawId, winningNumbers)
-	if err != nil {	
+	if err != nil {
 		return make([]int, 0), errors.Errorf("failed to save winning numbers: %w", err)
 	}
 
 	return winningNumbers, nil
 }
-

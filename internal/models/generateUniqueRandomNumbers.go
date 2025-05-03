@@ -16,16 +16,16 @@ func generateUniqueRandomNumbers(randReader io.Reader, count, min, max int) ([]i
 		return nil, errors.New("cannot generate more unique numbers than available in range")
 	}
 	if count <= 0 || min > max {
-        return nil, errors.New("invalid count or range")
-    }
+		return nil, errors.New("invalid count or range")
+	}
 
 	numbers := make(map[int]struct{})
 	result := make([]int, 0, count)
-    attempts := 0
-    maxAttempts := count * 10 // Safety break
+	attempts := 0
+	maxAttempts := count * 10 // Safety break
 
 	for len(result) < count && attempts < maxAttempts {
-        attempts++
+		attempts++
 		nBig, err := rand.Int(randReader, big.NewInt(int64(max-min+1)))
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate random number: %w", err)
@@ -38,9 +38,9 @@ func generateUniqueRandomNumbers(randReader io.Reader, count, min, max int) ([]i
 		}
 	}
 
-    if len(result) < count {
-        return nil, errors.New("failed to generate sufficient unique numbers within attempts limit")
-    }
+	if len(result) < count {
+		return nil, errors.New("failed to generate sufficient unique numbers within attempts limit")
+	}
 
 	sort.Ints(result) // Keep winning numbers sorted
 	return result, nil

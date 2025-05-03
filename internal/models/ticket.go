@@ -47,6 +47,7 @@ type TicketStore struct {
 	StatusId int    `json:"status_id"`
 	DrawId   int    `json:"draw_id"`
 	Data     string `json:"data"`
+	UserId   int    `json:"user_id"`
 }
 
 func (t *TicketStore) Marshal(data string) {
@@ -72,4 +73,10 @@ type Ticket1 interface {
 	Status() TicketStatus        // Вывод статуса
 	Marshal() ([]byte, error)    // Маршалинг
 	Unmarshal(data []byte) error // Демаршалинг
+}
+
+type TicketResult struct {
+	WinCombination []int `json:"win_combination"`
+	Combination    []int `json:"combination"`
+	WinCount       int   `json:"win_count"`
 }

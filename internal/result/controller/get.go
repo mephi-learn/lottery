@@ -1,27 +1,13 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 )
 
-// type cancelDraw struct {
-// 	Id int `json:"id"`
-// }
-
 func (h *handler) GetDrawResults(w http.ResponseWriter, r *http.Request) {
-	// user, err := models.UserFromContext(r.Context())
-	// if err != nil {
-	// 	http.Error(w, "authenticate need", http.StatusBadRequest)
-	// 	return
-	// }
-
-	// if !user.Admin {
-	// 	http.Error(w, "permission denied, admin only area", http.StatusForbidden)
-	// 	return
-	// }
-
 	// Парсим входные данные
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -29,13 +15,24 @@ func (h *handler) GetDrawResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.GetDrawResults(r.Context(), id); 
+	result, err := h.service.GetDrawResults(r.Context(), id)
 	if err != nil {
 		h.log.Error("failed to get draw results", "err", err)
 		http.Error(w, fmt.Sprintf("failed to get draw results: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
+	responsePayload := map[string]interface{}{
+		"result": result,
+	}
+	data, err := json.Marshal(responsePayload)
+	if err != nil {
+		h.log.Error("failed to marshal response", "err", err)
+		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(fmt.Sprintf("draw results: %d", result)))
+	_, err = w.Write(data)
 }
