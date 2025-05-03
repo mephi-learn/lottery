@@ -42,13 +42,13 @@ func WithService(svc resultService) HandlerOption {
 }
 
 type resultService interface {
-	// CheckTicketResult(ctx context.Context, ticketId int) error //(только USER): Проверка результата билета.
-	GetDrawResults(ctx context.Context, drawId int) (int, error)                        // Получение выигрышной комбинации тиража.
+	GetDrawResults(ctx context.Context, drawId int) (int, error)			// Получение выигрышной комбинации тиража.
+	GenerateDrawResults(ctx context.Context, drawId int) ([]int, error) // Генерация результатов тиража.
 }
 
 type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("GET /api/draws/{id}/results", http.HandlerFunc(h.GetDrawResults))
-	// mux.Handle("GET /api/tickets/{id}/check-result", auth.Authenticated(h.CheckTicketResult))
+	mux.Handle("PUT /api/draws/{id}/results/generate", http.HandlerFunc(h.GenerateDrawResults))
 }

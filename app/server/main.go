@@ -13,6 +13,7 @@ import (
 	drawservice "homework/internal/draw/service"
 	lotteryservice "homework/internal/lottery/service"
 	resultcontroller "homework/internal/result/controller"
+	resultrepository "homework/internal/result/repository"
 	resultservice "homework/internal/result/service"
 
 	"homework/internal/models"
@@ -107,14 +108,20 @@ func main() {
 
 	resultlog := serverlog.WithGroup("result")
 
-		// Инициализация сервиса DrawResult.
-		resultService := start(resultservice.NewResultService(
-			resultservice.WithDrawLogger(resultlog.WithGroup("service")),
-			// drawservice.WithDrawRepository(drawRepo),
-			// drawservice.WithLotteryService(lotteryService),
-		))
+	// Инициализация репозитория Draw result.
+	resultRepo := start(resultrepository.NewRepository(
+		resultrepository.WithStorage(st),
+		resultrepository.WithLogger(resultlog.WithGroup("repository")),
+	))
 
-		// Инициализация контроллера Draw.
+	// Инициализация сервиса DrawResult.
+	resultService := start(resultservice.NewResultService(
+		resultservice.WithDrawLogger(resultlog.WithGroup("service")),
+		resultservice.WithDrawRepository(resultRepo),
+		resultservice.WithLotteryService(lotteryService),
+	))
+
+	// Инициализация контроллера DrawResult.
 	resultController := start(resultcontroller.NewHandler(
 		resultcontroller.WithLogger(resultlog.WithGroup("controller")),
 		resultcontroller.WithService(resultService),

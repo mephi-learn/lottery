@@ -1,19 +1,22 @@
 package service
 
 import (
+	"context"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 )
 
-// Repository реализует интерфейс репозитория тиража.
-// type Repository interface {
-// 	Create(ctx context.Context, draw *models.DrawStore) (drawId int, err error) // Создание тиража
-// 	Cancel(ctx context.Context, drawId int) error                               // Отмена тиража, все деньги возвращаются клиентам
-// 	SetSaleDate(ctx context.Context, drawId int, begin time.Time) error         // Установка времени начала продажи билетов
-// 	SetStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
-// 	ListActive(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
-// 	Get(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
-// }
+// LotteryService реализует интерфейс сервиса лотереи.
+type LotteryService interface {
+	LotteryByType(name string) (models.Lottery, error)
+}
+
+// Repository реализует интерфейс репозитория результатов тиража.
+type Repository interface {
+	GetDraw(ctx context.Context, drawId int) (*models.DrawResultStore, error) // получение тиража
+	SaveWinCombination(ctx context.Context, drawId int, winCombination []int) error // сохранение выигрышной комбинации
+}
 
 // // ResultService реализует интерфейс сервиса результатов лотереи.
 // type ResultService interface {
@@ -26,10 +29,10 @@ import (
 type DrawOption func(*resultService) error
 
 type resultService struct {
-	// repo    Repository
+	repo    Repository
+	log     log.Logger
+	lottery LotteryService
 	// result  ResultService
-
-	log log.Logger
 }
 
 // NewResultService возвращает имплементацию сервиса для получения результатов тиража.
@@ -44,9 +47,9 @@ func NewResultService(opts ...DrawOption) (*resultService, error) {
 		return nil, errors.Errorf("no logger provided")
 	}
 
-	// if svc.repo == nil {
-	// 	return nil, errors.Errorf("no repository provided")
-	// }
+	if svc.repo == nil {
+		return nil, errors.Errorf("no repository provided")
+	}
 
 	return &svc, nil
 }
@@ -58,16 +61,16 @@ func WithDrawLogger(logger log.Logger) DrawOption {
 	}
 }
 
-// func WithDrawRepository(repo Repository) DrawOption {
-// 	return func(r *resultService) error {
-// 		r.repo = repo
-// 		return nil
-// 	}
-// }
+func WithDrawRepository(repo Repository) DrawOption {
+	return func(r *resultService) error {
+		r.repo = repo
+		return nil
+	}
+}
 
-// func WithLotteryService(result ResultService) DrawOption {
-// 	return func(r *resultService) error {
-// 		r.result = result
-// 		return nil
-// 	}
-// }
+func WithLotteryService(lottery LotteryService) DrawOption {
+	return func(r *resultService) error {
+		r.lottery = lottery
+		return nil
+	}
+}
