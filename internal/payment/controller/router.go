@@ -2,9 +2,10 @@ package controller
 
 import (
 	"context"
+	"homework/internal/auth"
+	"homework/pkg/errors"
 	"homework/pkg/log"
 	"net/http"
-	"time"
 )
 
 type handler struct {
@@ -12,16 +13,47 @@ type handler struct {
 	log     log.Logger
 }
 
-type paymentService interface {
-	RegisterInvoice(ctx context.Context, timeRegistration time.Time) (err error)
-	RegisterPayment(ctx context.Context, payment float64) (err error)
+type HandlerOption func(*handler)
+
+func NewHandler(opts ...HandlerOption) (*handler, error) {
+	h := &handler{}
+
+	for _, opt := range opts {
+		opt(h)
+	}
+
+	if h.log == nil {
+		return nil, errors.New("logger is missing")
+	}
+
+	return h, nil
 }
+
+func WithLogger(logger log.Logger) HandlerOption {
+	return func(o *handler) {
+		o.log = logger
+	}
+}
+
+// WithService добавляет [paymentService] в обработчик запросов.
+func WithService(svc paymentService) HandlerOption {
+	return func(o *handler) {
+		o.service = svc
+	}
+}
+
+type paymentService interface {
+	RegisterInvoice(ctx context.Context, ticketId int) (err error)
+	RegisterPayment(ctx context.Context, paymentId int, payment float64) (err error)
+}
+
+type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	// Invoice
-	mux.Handle("POST /api/invoice", http.HandlerFunc(h.RegisterInvoice))
+	mux.Handle("POST /api/invoice/{ticket_id}", auth.Authenticated(h.RegisterInvoice))
 	// Payment
-	mux.Handle("POST /api/payments", http.HandlerFunc(h.RegisterPayment))
+	mux.Handle("POST /api/payments/{invoice_id}", auth.Authenticated(h.RegisterPayment))
 }
 
 // 1. Если идёт выбор билета, то из тикет сервиса получаем список доступных билетов (статус тиража: запланирован, билет без user_id в статусе: готов)

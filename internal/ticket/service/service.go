@@ -54,6 +54,14 @@ func NewTicketService(opts ...TicketOption) (*ticketService, error) {
 		return nil, errors.Errorf("no repository provided")
 	}
 
+	if svc.lottery == nil {
+		return nil, errors.Errorf("no lottery provided")
+	}
+
+	if svc.draw == nil {
+		return nil, errors.Errorf("no draw provided")
+	}
+
 	return &svc, nil
 }
 

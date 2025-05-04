@@ -13,6 +13,9 @@ import (
 	drawservice "homework/internal/draw/service"
 	lotteryservice "homework/internal/lottery/service"
 	"homework/internal/models"
+	paymentcontroller "homework/internal/payment/controller"
+	paymentrepository "homework/internal/payment/repository"
+	paymentservice "homework/internal/payment/service"
 	"homework/internal/server"
 	"homework/internal/storage"
 	ticketcontroller "homework/internal/ticket/controller"
@@ -128,12 +131,35 @@ func main() {
 		ticketcontroller.WithService(ticketService),
 	))
 
+	// Родительский логгер для подсистем внутри сервиса ticket.
+	paymentLog := serverlog.WithGroup("payment")
+
+	// Инициализация репозитория Payment.
+	paymentRepo := start(paymentrepository.NewRepository(
+		paymentrepository.WithStorage(st),
+		paymentrepository.WithLogger(paymentLog.WithGroup("repository")),
+	))
+
+	// Инициализация сервиса Payment.
+	paymentService := start(paymentservice.NewPaymentService(
+		paymentservice.WithPaymentLogger(paymentLog.WithGroup("service")),
+		paymentservice.WithPaymentRepository(paymentRepo),
+		paymentservice.WithTicketService(ticketService),
+	))
+
+	// Инициализация контроллера Payment.
+	paymentController := start(paymentcontroller.NewHandler(
+		paymentcontroller.WithLogger(paymentLog.WithGroup("controller")),
+		paymentcontroller.WithService(paymentService),
+	))
+
 	// Инициализация HTTP сервера.
 	http := start(server.New(cfg.Server.HTTP,
 		server.WithLogger(serverlog.WithGroup("server")),
 		server.WithController(authController),
 		server.WithController(drawController),
 		server.WithController(ticketController),
+		server.WithController(paymentController),
 	))
 
 	go manager.run(http.ListenAndServe)
