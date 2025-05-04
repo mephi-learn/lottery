@@ -8,8 +8,8 @@ import (
 
 func (r *repository) StoreTicket(ctx context.Context, ticket *models.Ticket) error {
 	var ticketId int
-	if err := r.db.QueryRowContext(ctx, "insert into tickets(status_id, draw_id, data) values($1, $2, $3) returning id",
-		ticket.Status, ticket.DrawId, ticket.Data).Scan(&ticketId); err != nil {
+	if err := r.db.QueryRowContext(ctx, "insert into tickets(status_id, draw_id, data, user_id, lock_time) values($1, $2, $3, $4, $5) returning id",
+		ticket.Status, ticket.DrawId, ticket.Data, ticket.UserId, ticket.LockTime).Scan(&ticketId); err != nil {
 		return errors.Errorf("failed to store ticket: %w", err)
 	}
 
@@ -50,6 +50,34 @@ func (r *repository) LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*mo
 	for rows.Next() {
 		var ticket models.Ticket
 		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data); err != nil {
+			return nil, err
+		}
+		tickets = append(tickets, &ticket)
+	}
+
+	return tickets, nil
+}
+
+func (r *repository) ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {
+	rows, err := r.db.QueryContext(ctx, `
+SELECT t.id, t.status_id, t.draw_id, data, user_id, lock_time
+FROM tickets t INNER JOIN draws d ON t.draw_id = d.id
+WHERE 1 = 1
+    and d.status_id = $1
+    and t.status_id = $2
+    and t.draw_id = $3
+  	and t.user_id is null`, models.DrawStatusPlanned, models.TicketStatusReady, drawId)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var tickets []*models.Ticket
+	for rows.Next() {
+		var ticket models.Ticket
+		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &ticket.UserId, &ticket.LockTime); err != nil {
 			return nil, err
 		}
 		tickets = append(tickets, &ticket)

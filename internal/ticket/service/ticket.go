@@ -4,7 +4,10 @@ import (
 	"context"
 	"homework/internal/models"
 	"homework/pkg/errors"
+	"time"
 )
+
+const ticketLockTime = 2
 
 func (s *ticketService) CreateTickets(ctx context.Context, drawId int, num int) ([]*models.Ticket, error) {
 	// Читаем существующие билеты конкретного тиража из БД, генерирую на основе правил новые билеты, сохраняю их и возвращаю списком
@@ -109,4 +112,69 @@ func (s *ticketService) AddTicket(ctx context.Context, ticket *models.Ticket) (*
 	}
 
 	return ticket, nil
+}
+
+// ListAvailableTicketsByDrawId выдаёт список допустимых билетов для покупки (конкретный тираж)
+func (s *ticketService) ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {
+	tickets, err := s.repo.ListAvailableTicketsByDrawId(ctx, drawId)
+	if err != nil {
+		return nil, errors.Errorf("failed to list tickets: %w", err)
+	}
+
+	return tickets, nil
+}
+
+// CreateReservedTicket создаёт билет для лотереи из данных (номера, перечисленные через запятую) и сразу резервирует его
+func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, data string) (*models.Ticket, error) {
+	// Получаем аутентифицированного пользователя
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return nil, errors.Errorf("authentificate need: %w", err)
+	}
+
+	// Получаем информацию по тиражу
+	draw, err := s.draw.GetDraw(ctx, drawId)
+	if err != nil {
+		s.log.ErrorContext(ctx, "failed load draw info", "error", err)
+		return nil, errors.Errorf("failed load draw info: %w", err)
+	}
+
+	// Создаём лотерею по её типу
+	lotteryType, err := s.lottery.LotteryByType(draw.LotteryType)
+	if err != nil {
+		s.log.ErrorContext(ctx, "unknown lottery type", "error", err)
+		return nil, errors.Errorf("unknown lottery type: %w", err)
+	}
+	lottery := lotteryType.Create()
+
+	ticket, err := lottery.CreateTicket(drawId, data)
+	if err != nil {
+		return nil, errors.Errorf("failed create ticket: %w", err)
+	}
+
+	ticket.Status = models.TicketStatusReady
+	ticket.UserId = user.ID
+	ticket.LockTime = time.Now().Add(ticketLockTime * time.Minute)
+
+	if err = s.repo.StoreTicket(ctx, ticket); err != nil {
+		return nil, errors.Errorf("failed store ticket: %w", err)
+	}
+
+	return ticket, nil
+}
+
+// ReserveTicket маркирует билет зарезервированным (выставляет время окончания в поле lock_time)
+func (s *ticketService) ReserveTicket(ctx context.Context, ticketId int, userId int) error {
+	return nil
+}
+
+// BoughtTicket маркирует билет купленным (стирает время окончания в поле lock_time и меняет статус на КУПЛЕН)
+func (s *ticketService) BoughtTicket(ctx context.Context, ticketId int) error {
+	return nil
+}
+
+// CancelTicket делает билет снова доступным для покупки (стирает время окончания в поле lock_time)
+func (s *ticketService) CancelTicket(ctx context.Context, ticketId int) error {
+	// Тут нужно вызвать ОТДЕЛЬНУЮ функцию, отменяющую билет, эта же функция будет вызываться шедулером, для отмены билетов с просроченной оплатой
+	return nil
 }

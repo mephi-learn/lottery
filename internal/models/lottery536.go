@@ -58,6 +58,30 @@ func (l *Lottery536) AddTickets(tickets []*Ticket) error {
 	return nil
 }
 
+// CreateTicket создаёт билет в лотерее.
+func (l *Lottery536) CreateTicket(drawId int, data string) (*Ticket, error) {
+	// Не даём использовать заготовку
+	if !l.notTemplate {
+		return nil, errors.New("use template")
+	}
+
+	split := strings.Split(data, ",")
+	combination := make([]int, len(split))
+	for i, num := range split {
+		add, err := strconv.Atoi(num)
+		if err != nil {
+			return nil, errors.Errorf("invalid combination digit: %s", num)
+		}
+		combination[i] = add
+	}
+
+	if err := l.validateCombination(combination); err != nil {
+		return nil, errors.New("invalid combination")
+	}
+
+	return l.toTicket(&lottery536Ticket{Status: TicketStatusReady, DrawId: drawId, Combination: combination}), nil
+}
+
 func (l *Lottery536) CreateTickets(drawId int, num int) ([]*Ticket, error) {
 	// Не даём использовать заготовку
 	if !l.notTemplate {
