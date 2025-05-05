@@ -165,6 +165,22 @@ func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, da
 
 // ReserveTicket маркирует билет зарезервированным (выставляет время окончания в поле lock_time)
 func (s *ticketService) ReserveTicket(ctx context.Context, ticketId int, userId int) error {
+	ticket, err := s.repo.GetTicketById(ctx, ticketId)
+	if err != nil {
+		return errors.Errorf("failed to get ticket: %w", err)
+	}
+
+	if ticket.Status != models.TicketStatusReady {
+		return errors.New("ticket is not available for reservation")
+	}
+
+	ticket.UserId = userId
+	ticket.LockTime = time.Now().Add(ticketLockTime * time.Minute)
+
+	if err = s.repo.StoreTicket(ctx, ticket); err != nil {
+		return errors.Errorf("failed to store ticket: %w", err)
+	}
+
 	return nil
 }
 
