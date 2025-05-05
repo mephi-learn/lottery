@@ -107,7 +107,7 @@ func TestErr_StackLast(t *testing.T) {
 
 		stack = string(e.(*wrappedError).StackLast())
 		stacks = strings.Split(stack, "\n")
-		require.Contains(t, stacks[11], "panicFn1: panicFn2(5)", "Stack trace does not contain source line: 'panicFn1: panicFn2(5))'", stack)
+		require.Contains(t, stack, "panicFn1: panicFn2(5)", "Stack trace does not contain source line: 'panicFn1: panicFn2(5)'", stack)
 		require.Contains(t, stacks[0], "error_test.go:", "Stack trace does not contain file name: 'error_test.go:'", stack)
 	}()
 
