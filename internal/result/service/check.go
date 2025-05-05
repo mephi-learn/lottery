@@ -16,34 +16,30 @@ func (s *resultService) CheckTicketResult(ctx context.Context, ticketId, userId 
 		return nil, errors.Errorf("ticket not found")
 	}
 
-	drawRes, err := s.repo.GetDraw(ctx, ticket.DrawId)
+	return ProcessTicket(ctx, ticket, s.repo)
+}
 
+func (s *resultService) CheckTicketsResult(ctx context.Context, userId int) ([]models.TicketResult, error) {
+	tickets, err := s.repo.GetUserTickets(ctx, userId)
 	if err != nil {
-		return nil, errors.Errorf("failed to get draw: %w", err)
-	}
-	if drawRes == nil {
-		return nil, errors.Errorf("draw not found")
+		return nil, errors.Errorf("failed to get ticket: %w", err)
 	}
 
-	// compare ticket numbers with winning combination
-	if drawRes.WinCombination == nil {
-		return nil, errors.Errorf("winning combination not found")
+	if len(tickets) == 0 {
+		return nil, errors.Errorf("tickets not found")
 	}
 
-	drawWinCombination := GetWinCombSlice(drawRes.WinCombination)
+	resTickets := []models.TicketResult{}
 
-	ticketCombination, err := ParseTicketCombination(ticket.Data)
-
-	if err != nil {
-		return nil, errors.Errorf("couldn't parse ticket info")
+	for _, ticket := range tickets {
+		res, err := ProcessTicket(ctx, &ticket, s.repo)
+		if err != nil {
+			return nil, errors.Errorf("ticket processing error")
+		}
+		if res != nil { 
+			resTickets = append(resTickets, *res) 
+		}
 	}
 
-	result := countMatches(ticketCombination, drawWinCombination)
-
-	// return fmt.Sprintf("combination here: %d, ticket combination: %w", result, ticketCombination), nil
-	return &models.TicketResult{
-		WinCombination: drawWinCombination,
-		Combination:    ticketCombination,
-		WinCount:       result,
-	}, nil
+	return resTickets, nil
 }

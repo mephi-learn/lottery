@@ -1,8 +1,10 @@
 package service
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"strconv"
 	"strings"
@@ -69,4 +71,38 @@ func countMatches(ticketNumbers []int, winningNumbers []int) int {
 		}
 	}
 	return matchCount
+}
+
+func ProcessTicket(ctx context.Context, ticket *models.TicketStore, repo Repository) (*models.TicketResult, error) {
+	drawRes, err := repo.GetDraw(ctx, ticket.DrawId)
+
+	if err != nil {
+		return nil, errors.Errorf("failed to get draw: %w", err)
+	}
+	if drawRes == nil {
+		return nil, errors.Errorf("draw not found")
+	}
+
+	// compare ticket numbers with winning combination
+	if drawRes.WinCombination == nil {
+		return nil, errors.Errorf("winning combination not found")
+	}
+
+	drawWinCombination := GetWinCombSlice(drawRes.WinCombination)
+
+	ticketCombination, err := ParseTicketCombination(ticket.Data)
+
+	if err != nil {
+		return nil, errors.Errorf("couldn't parse ticket info")
+	}
+
+	result := countMatches(ticketCombination, drawWinCombination)
+
+	// return fmt.Sprintf("combination here: %d, ticket combination: %w", result, ticketCombination), nil
+	return &models.TicketResult{
+		WinCombination: drawWinCombination,
+		Combination:    ticketCombination,
+		WinCount:       result,
+		Id:            ticket.Id,
+	}, nil
 }

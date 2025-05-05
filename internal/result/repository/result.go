@@ -52,7 +52,7 @@ func (r *repository) SaveWinCombination(ctx context.Context, drawId int, winComb
 func (r *repository) GetUserTicket(ctx context.Context, ticketId, userId int) (*models.TicketStore, error) {
 	ticket := models.TicketStore{}
 	if err := r.db.QueryRowContext(ctx, `
-		SELECT * FROM tickets WHERE id = $1 AND user_id = $2`, ticketId, userId).Scan(
+		SELECT id, status_id, draw_id, data, user_id FROM tickets WHERE id = $1 AND user_id = $2`, ticketId, userId).Scan(
 		&ticket.Id,
 		&ticket.StatusId,
 		&ticket.DrawId,
@@ -67,4 +67,41 @@ func (r *repository) GetUserTicket(ctx context.Context, ticketId, userId int) (*
 	}
 
 	return &ticket, nil
+}
+
+func (r *repository) GetUserTickets(ctx context.Context, userId int) ([]models.TicketStore, error) {
+	query := `
+		SELECT id, status_id, draw_id, data, user_id 
+		FROM tickets 
+		WHERE user_id = $1
+		ORDER BY id DESC`
+
+	rows, err := r.db.QueryContext(ctx, query, userId)
+	if err != nil {
+		return nil, errors.Errorf("failed to query tickets for user_id %d, err: %w", userId, err)
+	}
+	defer rows.Close()
+
+	tickets := []models.TicketStore{} // Initialize an empty slice
+
+	for rows.Next() {
+		var ticket models.TicketStore
+		if err := rows.Scan(
+			&ticket.Id,
+			&ticket.StatusId,
+			&ticket.DrawId,
+			&ticket.Data, // Ensure models.TicketStore.Data field can handle the DB type
+			&ticket.UserId,
+		); err != nil {
+			// Error scanning a specific row
+			return nil, errors.Errorf("failed to scan ticket row, cause: %w", err)
+		}
+		tickets = append(tickets, ticket)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.Errorf("error iterating over ticket rows, cause: %w", err)
+	}
+
+	return tickets, nil
 }
