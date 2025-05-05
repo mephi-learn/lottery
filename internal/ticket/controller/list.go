@@ -25,8 +25,15 @@ func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ticketsVal := make([]models.Ticket, 0, len(tickets))
+	for _, t := range tickets {
+		if t != nil {
+			ticketsVal = append(ticketsVal, *t)
+		}
+	}
+
 	response := listAvailableTicketsResponse{
-		Tickets: tickets,
+		Tickets: ticketsVal,
 	}
 
 	out, err := json.Marshal(response)
