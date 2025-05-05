@@ -36,8 +36,8 @@ func (s *resultService) CheckTicketsResult(ctx context.Context, userId int) ([]m
 		if err != nil {
 			return nil, errors.Errorf("ticket processing error")
 		}
-		if res != nil { 
-			resTickets = append(resTickets, *res) 
+		if res != nil {
+			resTickets = append(resTickets, *res)
 		}
 	}
 

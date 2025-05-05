@@ -103,6 +103,6 @@ func ProcessTicket(ctx context.Context, ticket *models.TicketStore, repo Reposit
 		WinCombination: drawWinCombination,
 		Combination:    ticketCombination,
 		WinCount:       result,
-		Id:            ticket.Id,
+		Id:             ticket.Id,
 	}, nil
 }

@@ -79,5 +79,5 @@ type TicketResult struct {
 	WinCombination []int `json:"win_combination"`
 	Combination    []int `json:"combination"`
 	WinCount       int   `json:"win_count"`
-	Id						int   `json:"id"`
+	Id             int   `json:"id"`
 }

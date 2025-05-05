@@ -47,7 +47,7 @@ type resultService interface {
 	GetDrawResults(ctx context.Context, drawId int) ([]int, error)                             // Получение выигрышной комбинации тиража.
 	GenerateDrawResults(ctx context.Context, drawId int) ([]int, error)                        // Генерация результатов тиража.
 	CheckTicketResult(ctx context.Context, ticketId, userId int) (*models.TicketResult, error) // Проверка результата по номеру билета.
-	CheckTicketsResult(ctx context.Context, userId int) ([]models.TicketResult, error) // Проверка результата по всем билетам пользователя.
+	CheckTicketsResult(ctx context.Context, userId int) ([]models.TicketResult, error)         // Проверка результата по всем билетам пользователя.
 }
 
 type RouteOption func(*handler)
