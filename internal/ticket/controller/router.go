@@ -48,7 +48,7 @@ type ticketService interface {
 	ListDrawTickets(ctx context.Context, drawId int) ([]*models.Ticket, error)
 	GetTicketById(ctx context.Context, ticketId int) (*models.Ticket, error)
 	AddTicket(ctx context.Context, ticket *models.Ticket) (*models.Ticket, error)
-	// ListTickets(ctx context.Context, userId int) ([]*models.Ticket, error)
+	ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error)
 }
 
 type RouteOption func(*handler)
@@ -57,9 +57,9 @@ func (h *handler) WithRouter(mux *http.ServeMux) {
 	// админ создает множество билетов
 	mux.Handle("POST /api/admin/tickets/draws/{drawId}/generate/{num}", auth.Authenticated(h.CreateTickets))
 
-	// TODO: USER получает информацию по билету
-	mux.Handle("GET /api/tickets/{ticketId}", auth.Authenticated(h.GetTicketById))
+	// USER получает информацию по билету
+	mux.Handle("GET /api/tickets/{ticket_id}", auth.Authenticated(h.GetTicketById))
 
-	// TODO: USER получает список своих билетов
-	// mux.Handle("GET /api/tickets", auth.Authenticated(h.ListAvailableTickets))
+	// USER получает список своих билетов
+	mux.Handle("GET /api/tickets/draws/{draw_id}", auth.Authenticated(h.ListAvailableTickets))
 }

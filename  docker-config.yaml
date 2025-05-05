@@ -1,0 +1,17 @@
+---
+server:
+  http:
+    addr:             :8080
+    shutdown_timeout: 0s
+
+logger:
+  level: debug
+
+storage:
+  postgres:
+    host:     db
+    port:     5432
+    user:     db
+    password: db
+    database: db
+    schema:   lottery

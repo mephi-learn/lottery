@@ -1,3 +1,7 @@
 .idea
 config.yaml
 .DS_Store
+
+mise.toml
+.vscode
+schema.sql
