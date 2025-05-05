@@ -41,7 +41,7 @@ func (l *Lottery645) Create() Lottery {
 	return &Lottery645{notTemplate: true}
 }
 
-// AddTickets добавляет билет в лотерею
+// AddTickets добавляет билет в лотерею.
 func (l *Lottery645) AddTickets(tickets []*Ticket) error {
 	// Не даём использовать заготовку
 	if !l.notTemplate {
@@ -57,6 +57,30 @@ func (l *Lottery645) AddTickets(tickets []*Ticket) error {
 	}
 
 	return nil
+}
+
+// CreateTicket создаёт билет в лотерее.
+func (l *Lottery645) CreateTicket(drawId int, data string) (*Ticket, error) {
+	// Не даём использовать заготовку
+	if !l.notTemplate {
+		return nil, errors.New("use template")
+	}
+
+	split := strings.Split(data, ",")
+	combination := make([]int, len(split))
+	for i, num := range split {
+		add, err := strconv.Atoi(num)
+		if err != nil {
+			return nil, errors.Errorf("invalid combination digit: %s", num)
+		}
+		combination[i] = add
+	}
+
+	if err := l.validateCombination(combination); err != nil {
+		return nil, errors.New("invalid combination")
+	}
+
+	return l.toTicket(&lottery645Ticket{Status: TicketStatusReady, DrawId: drawId, Combination: combination}), nil
 }
 
 func (l *Lottery645) CreateTickets(drawId int, num int) ([]*Ticket, error) {
@@ -116,7 +140,7 @@ func (l *Lottery645) Drawing(combination []int) (map[string][]*Ticket, error) {
 	return result, nil
 }
 
-// Преобразует билет из общего формата во внутренний
+// Преобразует билет из общего формата во внутренний.
 func (l *Lottery645) fromTicket(rawTicket *Ticket) (*lottery645Ticket, error) {
 	data, err := base64.StdEncoding.DecodeString(rawTicket.Data)
 	if err != nil {
@@ -158,7 +182,7 @@ func (l *Lottery645) fromTicket(rawTicket *Ticket) (*lottery645Ticket, error) {
 	}, nil
 }
 
-// Преобразует билет из внутреннего формата в общий
+// Преобразует билет из внутреннего формата в общий.
 func (l *Lottery645) toTicket(rawTicket *lottery645Ticket) *Ticket {
 	digits := make([]string, len(rawTicket.Combination))
 	for i, digit := range rawTicket.Combination {
@@ -174,7 +198,7 @@ func (l *Lottery645) toTicket(rawTicket *lottery645Ticket) *Ticket {
 	}
 }
 
-// Производит проверку на соответствие комбинации цифр правилам лотереи
+// Производит проверку на соответствие комбинации цифр правилам лотереи.
 func (l *Lottery645) validateCombination(combination []int) error {
 	if len(combination) != l645combinationLength {
 		return errors.New("invalid combination length")
@@ -198,7 +222,7 @@ func (l *Lottery645) validateCombination(combination []int) error {
 	return nil
 }
 
-// Проверяет, уникальна ли комбинация среди уже существующих билетов
+// Проверяет, уникальна ли комбинация среди уже существующих билетов.
 func (l *Lottery645) checkUniqCombination(combination []int, newTickets ...*lottery645Ticket) bool {
 	// Проверяем комбинацию на уникальность по существующим билетам
 	for _, ticket := range l.Tickets {

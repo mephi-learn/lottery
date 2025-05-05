@@ -31,8 +31,9 @@ func (h *handler) CancelDraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.CancelDraw(r.Context(), id); err != nil {
-		h.log.Error("failed to cancel draw", "err", err)
+		h.log.Error("failed to cancel draw", "error", err)
 		http.Error(w, fmt.Sprintf("failed to cancel draw: %w", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
 

@@ -1,29 +1,21 @@
 package service
 
 import (
-	"encoding/json"
+	"context"
 	"homework/internal/models"
-	"net/http"
-	"time"
-
-	"github.com/google/uuid"
+	"homework/pkg/errors"
 )
 
-// Регистрарация инвойса
-func RegisterInvoce(w http.ResponseWriter, r *http.Request) {
-	var invoice *models.Invoice
-	err := json.NewDecoder(r.Body).Decode(&invoice)
+// RegisterInvoice регистрация инвойса.
+func (s *paymentService) RegisterInvoice(ctx context.Context, ticketId int) (err error) {
+	user, err := models.UserFromContext(ctx)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return errors.New("authenticate need")
 	}
 
-	invoice.ID = uuid.New()
-	invoice.RegisterTime = time.Now()
-	invoice.Status = "pending" // Начальный статус
+	if err = s.ticket.ReserveTicket(ctx, ticketId, user.ID); err != nil {
+		return errors.Errorf("failed to reserve ticket: %w", err)
+	}
 
-	// invoices[invoice.ID] = invoice - данные с бэка
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(invoice)
+	return nil
 }

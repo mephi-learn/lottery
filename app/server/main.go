@@ -17,8 +17,14 @@ import (
 	resultservice "homework/internal/result/service"
 
 	"homework/internal/models"
+	paymentcontroller "homework/internal/payment/controller"
+	paymentrepository "homework/internal/payment/repository"
+	paymentservice "homework/internal/payment/service"
 	"homework/internal/server"
 	"homework/internal/storage"
+	ticketcontroller "homework/internal/ticket/controller"
+	ticketrepository "homework/internal/ticket/repository"
+	ticketservice "homework/internal/ticket/service"
 	"homework/pkg/log"
 	"os"
 	"os/signal"
@@ -126,6 +132,51 @@ func main() {
 		resultcontroller.WithLogger(resultlog.WithGroup("controller")),
 		resultcontroller.WithService(resultService),
 	))
+	
+	// Родительский логгер для подсистем внутри сервиса ticket.
+	ticketlog := serverlog.WithGroup("ticket")
+
+	// Инициализация репозитория Ticket.
+	ticketRepo := start(ticketrepository.NewRepository(
+		ticketrepository.WithStorage(st),
+		ticketrepository.WithLogger(ticketlog.WithGroup("repository")),
+	))
+
+	// Инициализация сервиса Ticket.
+	ticketService := start(ticketservice.NewTicketService(
+		ticketservice.WithTicketLogger(ticketlog.WithGroup("service")),
+		ticketservice.WithTicketRepository(ticketRepo),
+		ticketservice.WithLotteryService(lotteryService),
+		ticketservice.WithDrawService(drawService),
+	))
+
+	// Инициализация контроллера Ticket.
+	ticketController := start(ticketcontroller.NewHandler(
+		ticketcontroller.WithLogger(ticketlog.WithGroup("controller")),
+		ticketcontroller.WithService(ticketService),
+	))
+
+	// Родительский логгер для подсистем внутри сервиса ticket.
+	paymentLog := serverlog.WithGroup("payment")
+
+	// Инициализация репозитория Payment.
+	paymentRepo := start(paymentrepository.NewRepository(
+		paymentrepository.WithStorage(st),
+		paymentrepository.WithLogger(paymentLog.WithGroup("repository")),
+	))
+
+	// Инициализация сервиса Payment.
+	paymentService := start(paymentservice.NewPaymentService(
+		paymentservice.WithPaymentLogger(paymentLog.WithGroup("service")),
+		paymentservice.WithPaymentRepository(paymentRepo),
+		paymentservice.WithTicketService(ticketService),
+	))
+
+	// Инициализация контроллера Payment.
+	paymentController := start(paymentcontroller.NewHandler(
+		paymentcontroller.WithLogger(paymentLog.WithGroup("controller")),
+		paymentcontroller.WithService(paymentService),
+	))
 
 	// Инициализация HTTP сервера.
 	http := start(server.New(cfg.Server.HTTP,
@@ -133,6 +184,8 @@ func main() {
 		server.WithController(authController),
 		server.WithController(drawController),
 		server.WithController(resultController),
+		server.WithController(ticketController),
+		server.WithController(paymentController),
 	))
 
 	go manager.run(http.ListenAndServe)

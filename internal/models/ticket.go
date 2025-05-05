@@ -1,6 +1,9 @@
 package models
 
-import "encoding/base64"
+import (
+	"encoding/base64"
+	"time"
+)
 
 const (
 	TicketStatusUnknown TicketStatus = iota // Статус неизвестен (ошибка)
@@ -60,10 +63,12 @@ func (t *TicketStore) Unmarshal() (string, error) {
 }
 
 type Ticket struct {
-	Id     int          `json:"id"`
-	Status TicketStatus `json:"status"`
-	DrawId int          `json:"draw_id"`
-	Data   string       `json:"data"`
+	Id       int          `json:"id"`
+	Status   TicketStatus `json:"status"`
+	DrawId   int          `json:"draw_id"`
+	UserId   int          `json:"user_id"`
+	Data     string       `json:"data"`
+	LockTime time.Time    `json:"lock_time"`
 }
 
 type Ticket1 interface {

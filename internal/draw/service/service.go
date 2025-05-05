@@ -20,10 +20,7 @@ type Repository interface {
 	SetDrawStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
 	ListActiveDraw(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
 	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
-	StoreTicket(ctx context.Context, ticket *models.Ticket) error                   // Сохранить билет в хранилище
-	StoreTickets(ctx context.Context, tickets []*models.Ticket) error               // Сохранить список билетов в хранилище
-	LoadTickets(ctx context.Context, drawId int) ([]*models.Ticket, error)          // Получение списка билетов по идентификатору тиража
-	GetTicket(ctx context.Context, ticketId int) (*models.Ticket, error)            // Получение билета по его идентификатору
+	LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error)  // Получение списка билетов по идентификатору тиража
 }
 
 // LotteryService реализует интерфейс сервиса лотереи.
