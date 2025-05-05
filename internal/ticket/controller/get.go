@@ -21,9 +21,9 @@ func (h *handler) GetTicketById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ticketId, err := strconv.Atoi(r.PathValue("ticketId"))
+	ticketId, err := strconv.Atoi(r.PathValue("ticket_id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("ticketId")), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("ticket_id")), http.StatusBadRequest)
 		return
 	}
 
