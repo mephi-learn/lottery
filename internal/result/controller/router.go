@@ -55,6 +55,6 @@ type RouteOption func(*handler)
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("GET /api/draws/{id}/results", http.HandlerFunc(h.GetDrawResults))
 	mux.Handle("PUT /api/draws/{id}/results/generate", auth.Authenticated(h.GenerateDrawResults))
-	mux.Handle("GET /api/tickets/{id}/check-result", auth.Authenticated(h.CheckTicketResult))
-	mux.Handle("GET /api/tickets/results", auth.Authenticated(h.CheckTicketsResult))
+	mux.Handle("GET /api/results/tickets/{id}/check", auth.Authenticated(h.CheckTicketResult)) // был /api/tickets/{id}/check-result
+	mux.Handle("GET /api/results/tickets", auth.Authenticated(h.CheckTicketsResult))
 }

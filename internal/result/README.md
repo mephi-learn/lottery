@@ -27,7 +27,9 @@ curl --request GET \
 }
 ```
 
-2. `GET /api/tickets/{id}/check-result` (только USER): Проверка результата билета.
+2. `GET /api/results/tickets/{id}/check` (только USER): Проверка результата билета.
+
+из-за конфликта в router paths `/api/tickets/{id}/check-result` переименовал в `/api/results/tickets/{id}/check`
 
 ```bash
 curl --request GET \
@@ -74,7 +76,7 @@ curl --request PUT \
 }
 ```
 
-4. `GET /api/tickets/results` (только USER): Проверка результата всех билетов (история).
+4. `GET /api/results/tickets` (только USER): Проверка результата всех билетов (история).
 
 ```bash
 curl --request GET \
