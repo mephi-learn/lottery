@@ -13,9 +13,9 @@ type listAvailableTicketsResponse struct {
 }
 
 func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
-	drawId, err := strconv.Atoi(r.PathValue("drawId"))
+	drawId, err := strconv.Atoi(r.PathValue("draw_id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("drawId")), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("draw_id")), http.StatusBadRequest)
 		return
 	}
 

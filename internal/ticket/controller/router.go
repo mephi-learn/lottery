@@ -58,8 +58,8 @@ func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("POST /api/admin/tickets/draws/{drawId}/generate/{num}", auth.Authenticated(h.CreateTickets))
 
 	// USER получает информацию по билету
-	mux.Handle("GET /api/tickets/{ticketId}", auth.Authenticated(h.GetTicketById))
+	mux.Handle("GET /api/tickets/{ticket_id}", auth.Authenticated(h.GetTicketById))
 
 	// USER получает список своих билетов
-	mux.Handle("GET /api/tickets/{drawId}", auth.Authenticated(h.ListAvailableTickets))
+	mux.Handle("GET /api/tickets/{draw_id}", auth.Authenticated(h.ListAvailableTickets))
 }
