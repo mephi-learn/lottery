@@ -9,10 +9,10 @@ import (
 // Invoice представляет инвойс для оплаты билета.
 type Invoice struct {
 	ID           uuid.UUID `json:"id"`
-	TicketData   any       `json:"ticketData"` // Заменить any на данные билета
 	RegisterTime time.Time `json:"registerTime"`
 	Status       string    `json:"status"` // Например, "pending", "paid", "failed"
 	UserID       string    `json:"userID"` // ID пользователя, к которому относится инвойс, хз надо или не надо.
+	TicketID     int       `json:"ticketID"`
 }
 
 // Payment представляет информацию о платеже.

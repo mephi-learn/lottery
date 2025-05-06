@@ -43,7 +43,8 @@ func WithService(svc paymentService) HandlerOption {
 }
 
 type paymentService interface {
-	RegisterInvoice(ctx context.Context, ticketId int) (err error)
+	// Добавил инвойс id
+	RegisterInvoice(ctx context.Context, ticketId int) (invoiceId int, err error)
 	RegisterPayment(ctx context.Context, paymentId int, payment float64) (err error)
 }
 

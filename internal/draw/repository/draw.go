@@ -179,3 +179,17 @@ func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, er
 
 	return draws, nil
 }
+
+// Получение тиража по id билета (не используется пока что)
+func (r *repository) GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error) {
+	draw := models.DrawStore{}
+	if err := r.db.QueryRowContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = (select draw_id from tickets where id = $1)", ticketId).Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.Errorf("failed to create draw: %w", err)
+		}
+
+		return nil, nil
+	}
+
+	return &draw, nil
+}

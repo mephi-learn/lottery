@@ -3,19 +3,21 @@ package service
 import (
 	"context"
 	"homework/internal/models"
-	"homework/pkg/errors"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 // RegisterInvoice регистрация инвойса.
-func (s *paymentService) RegisterInvoice(ctx context.Context, ticketId int) (err error) {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.New("authenticate need")
-	}
+func (s *paymentService) RegisterInvoice(ctx context.Context, ticketId int) (invoiceId int, err error) {
+	var invoice models.Invoice
 
-	if err = s.ticket.ReserveTicket(ctx, ticketId, user.ID); err != nil {
-		return errors.Errorf("failed to reserve ticket: %w", err)
-	}
+	invoice.ID = uuid.New()
+	invoice.RegisterTime = time.Now()
+	invoice.Status = "pending"
+	invoice.TicketID = ticketId
 
-	return nil
+	invoiceId, err = s.repo.CreateInvoice(ctx, invoice)
+
+	return invoiceId, err
 }
