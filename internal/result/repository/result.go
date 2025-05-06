@@ -36,10 +36,12 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 	return &drawRes, nil
 }
 
-// GetCompletedDraw get draw status and it's winning combination (if there is one already)
+// GetCompletedDraws get draw status and it's winning combination (if there is one already)
 func (r *repository) GetCompletedDraws(ctx context.Context) ([]*models.DrawResultStore, error) {
+	var winCombiantion pq.Int64Array
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT
+		    r.id,
 			d.id,
 			d.status_id,
 			d.lottery_type,
@@ -56,8 +58,12 @@ func (r *repository) GetCompletedDraws(ctx context.Context) ([]*models.DrawResul
 	var draws []*models.DrawResultStore
 	for rows.Next() {
 		var draw models.DrawResultStore
-		if err = rows.Scan(&draw.Id, &draw.DrawStatusId, &draw.LotteryType, &draw.WinCombination); err != nil {
+		if err = rows.Scan(&draw.Id, &draw.DrawId, &draw.DrawStatusId, &draw.LotteryType, &winCombiantion); err != nil {
 			return draws, err
+		}
+		draw.WinCombination = make([]int, len(winCombiantion))
+		for i, combination := range winCombiantion {
+			draw.WinCombination[i] = int(combination)
 		}
 		draws = append(draws, &draw)
 	}
