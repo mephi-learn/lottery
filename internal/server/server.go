@@ -1,6 +1,7 @@
 package server
 
 import (
+	"homework/internal/export"
 	"homework/pkg/errors"
 	"net"
 	"net/http"
@@ -43,16 +44,20 @@ func New(config Config, opts ...Option) (*Server, error) {
 		return nil, errors.New("logger is missing")
 	}
 
+	mux := &http.ServeMux{}
+
+	exportHandler, err := export.NewHandler(export.WithLogger(server.log))
+	if err != nil {
+		return nil, err
+	}
+	exportHandler.WithRouter(mux)
+
+	server.mux = mux
+
 	return &server, nil
 }
 
 // ListenAndServe запускает сервер и принимает входящие запросы.
 func (s *Server) ListenAndServe() error {
-	mux := &http.ServeMux{}
-	for _, controller := range s.options.controllers {
-		controller.WithRouter(mux)
-	}
-	s.mux = mux
-
 	return http.ListenAndServe(s.options.addr.String(), s.mux)
 }
