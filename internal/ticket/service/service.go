@@ -5,6 +5,7 @@ import (
 	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
+	"time"
 )
 
 // Repository реализует интерфейс репозитория сервиса билетов.
@@ -15,6 +16,10 @@ type Repository interface {
 	LoadTicketsByUserId(ctx context.Context, userId int) ([]*models.Ticket, error)          // Получение списка билетов по идентификатору тиража
 	GetTicketById(ctx context.Context, ticketId int) (*models.Ticket, error)                // Получение билета по его идентификатору
 	ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) // Получение списка билетов, доступных для покупки
+	MarkTicketAsBought(ctx context.Context, ticketId int) error                             // Маркировка билета как купленного
+	ReserveTicket(ctx context.Context, ticketId int, userId int, lockTime time.Time) error  // Резервирование билета
+	CancelTicket(ctx context.Context, ticketId int) error                                   // Отмена резервирования билета
+	GetExpiredTickets(ctx context.Context) ([]int, error)                                   // Получение списка просроченных билетов
 }
 
 // LotteryService реализует интерфейс сервиса лотереи.

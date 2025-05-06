@@ -4,6 +4,7 @@ import (
 	"context"
 	"homework/internal/models"
 	"homework/pkg/errors"
+	"time"
 )
 
 func (r *repository) StoreTicket(ctx context.Context, ticket *models.Ticket) error {
@@ -116,4 +117,52 @@ func (r *repository) GetTicketById(ctx context.Context, ticketId int) (*models.T
 	}
 
 	return &ticket, nil
+}
+
+func (r *repository) MarkTicketAsBought(ctx context.Context, ticketId int) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE tickets SET status_id = $1, lock_time = NULL WHERE id = $2",
+		models.TicketStatusBought, ticketId)
+	if err != nil {
+		return errors.Errorf("failed to update ticket status: %w", err)
+	}
+	return nil
+}
+
+func (r *repository) ReserveTicket(ctx context.Context, ticketId int, userId int, lockTime time.Time) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE tickets SET status_id = $1, user_id = $2, lock_time = $3 WHERE id = $4",
+		models.TicketStatusReady, userId, lockTime, ticketId)
+	if err != nil {
+		return errors.Errorf("failed to reserve ticket: %w", err)
+	}
+	return nil
+}
+
+func (r *repository) CancelTicket(ctx context.Context, ticketId int) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE tickets SET status_id = $1, user_id = NULL, lock_time = NULL WHERE id = $2",
+		models.TicketStatusReady, ticketId)
+	if err != nil {
+		return errors.Errorf("failed to cancel ticket: %w", err)
+	}
+	return nil
+}
+
+func (r *repository) GetExpiredTickets(ctx context.Context) ([]int, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id FROM tickets WHERE lock_time < NOW() AND lock_time IS NOT NULL")
+	if err != nil {
+		return nil, errors.Errorf("failed to get expired tickets: %w", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var ticketIds []int
+	for rows.Next() {
+		var id int
+		if err = rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ticketIds = append(ticketIds, id)
+	}
+
+	return ticketIds, nil
 }
