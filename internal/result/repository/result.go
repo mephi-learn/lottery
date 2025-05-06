@@ -11,6 +11,7 @@ import (
 
 // get draw status and it's winning combination (if there is one already)
 func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResultStore, error) {
+	var winCombination pq.Int64Array
 	drawRes := models.DrawResultStore{}
 	if err := r.db.QueryRowContext(ctx, `
 		SELECT
@@ -24,7 +25,7 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 		&drawRes.Id,
 		&drawRes.DrawStatusId,
 		&drawRes.LotteryType,
-		&drawRes.WinCombination,
+		&winCombination,
 	); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.Errorf("failed to get draw info: %w", err)
@@ -33,12 +34,17 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 		return nil, nil
 	}
 
+	drawRes.WinCombination = make([]int, len(winCombination))
+	for i, combination := range winCombination {
+		drawRes.WinCombination[i] = int(combination)
+	}
+
 	return &drawRes, nil
 }
 
 // GetCompletedDraws get draw status and it's winning combination (if there is one already)
 func (r *repository) GetCompletedDraws(ctx context.Context) ([]*models.DrawResultStore, error) {
-	var winCombiantion pq.Int64Array
+	var winCombination pq.Int64Array
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT
 		    r.id,
@@ -58,11 +64,11 @@ func (r *repository) GetCompletedDraws(ctx context.Context) ([]*models.DrawResul
 	var draws []*models.DrawResultStore
 	for rows.Next() {
 		var draw models.DrawResultStore
-		if err = rows.Scan(&draw.Id, &draw.DrawId, &draw.DrawStatusId, &draw.LotteryType, &winCombiantion); err != nil {
+		if err = rows.Scan(&draw.Id, &draw.DrawId, &draw.DrawStatusId, &draw.LotteryType, &winCombination); err != nil {
 			return draws, err
 		}
-		draw.WinCombination = make([]int, len(winCombiantion))
-		for i, combination := range winCombiantion {
+		draw.WinCombination = make([]int, len(winCombination))
+		for i, combination := range winCombination {
 			draw.WinCombination[i] = int(combination)
 		}
 		draws = append(draws, &draw)

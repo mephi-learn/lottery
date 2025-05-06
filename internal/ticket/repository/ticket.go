@@ -14,6 +14,7 @@ func (r *repository) StoreTicket(ctx context.Context, ticket *models.Ticket) err
 		ticket.Status, ticket.DrawId, ticket.Data, ticket.UserId, ticket.LockTime).Scan(&ticketId); err != nil {
 		return errors.Errorf("failed to store ticket: %w", err)
 	}
+	ticket.Id = ticketId
 
 	return nil
 }
@@ -136,8 +137,11 @@ func (r *repository) MarkTicketAsBought(ctx context.Context, ticketId int) error
 
 func (r *repository) ReserveTicket(ctx context.Context, ticketId int, userId int, lockTime time.Time) error {
 	var resultTicketId int
-	err := r.db.QueryRowContext(ctx, "UPDATE tickets SET status_id = $1, user_id = $2, lock_time = $3 WHERE id = $4 and lock_time is null returning id",
-		models.TicketStatusReady, userId, lockTime, ticketId).Scan(&resultTicketId)
+	err := r.db.QueryRowContext(ctx, `
+UPDATE tickets SET status_id = $1, user_id = $2, lock_time = $3
+WHERE id = $4 and (lock_time is null) OR (user_id = $5 and lock_time is not null)
+returning id`,
+		models.TicketStatusReady, userId, lockTime, ticketId, userId).Scan(&resultTicketId)
 	if err != nil {
 		return errors.Errorf("failed to reserve ticket: %w", err)
 	}

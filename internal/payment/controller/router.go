@@ -44,8 +44,8 @@ func WithService(svc paymentService) HandlerOption {
 }
 
 type paymentService interface {
-	// Добавил инвойс id
 	RegisterInvoice(ctx context.Context, ticketId int) (invoiceId int, err error)
+	RegisterCustomInvoice(ctx context.Context, drawId int, combination []int) (invoiceId int, err error)
 	RegisterPayment(ctx context.Context, req *models.PaymentRequest) (err error)
 }
 
@@ -54,6 +54,7 @@ type RouteOption func(*handler)
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	// Invoice
 	mux.Handle("POST /api/invoice/{ticket_id}", auth.Authenticated(h.RegisterInvoice))
+	mux.Handle("POST /api/invoice/draws/{draw_id}/ticket", auth.Authenticated(h.RegisterCustomInvoice))
 	// Payment
 	mux.Handle("POST /api/payments/{invoice_id}", auth.Authenticated(h.RegisterPayment))
 }
