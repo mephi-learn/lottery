@@ -9,20 +9,21 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./docker-config.yaml:/app/config.yaml:ro
+      - ./config.local.yaml:/app/config.yaml:ro
     entrypoint: ["/app/app", "-config", "/app/config.yaml"]
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: db
-      POSTGRES_USER: db
-      POSTGRES_PASSWORD: db
+      POSTGRES_DB: mephy
+      POSTGRES_USER: mephy
+      POSTGRES_PASSWORD: mephy
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U db"]
+      test: ["CMD-SHELL", "pg_isready -U mephy"]
       interval: 10s
       timeout: 5s
       retries: 5

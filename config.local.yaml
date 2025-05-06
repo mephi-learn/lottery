@@ -11,7 +11,7 @@ storage:
   postgres:
     host:     db
     port:     5432
-    user:     db
-    password: db
-    database: db
+    user:     mephy
+    password: mephy
+    database: mephy
     schema:   lottery
