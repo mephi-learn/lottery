@@ -16,9 +16,9 @@ func (h *handler) CheckTicketResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Парсим входные данные
-	ticketId, err := strconv.Atoi(r.PathValue("id"))
+	ticketId, err := strconv.Atoi(r.PathValue("ticket_id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("no such ticket for the given user: %s", r.PathValue("id")), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("no such ticket for the given user: %s", r.PathValue("ticket_id")), http.StatusBadRequest)
 		return
 	}
 

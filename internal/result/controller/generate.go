@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (h *handler) GenerateDrawResults(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 	user, err := models.UserFromContext(r.Context())
 	if err != nil {
 		http.Error(w, "authentication needed", http.StatusBadRequest)
@@ -27,7 +27,7 @@ func (h *handler) GenerateDrawResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.GenerateDrawResults(r.Context(), id)
+	result, err := h.service.Drawing(r.Context(), id)
 	if err != nil {
 		h.log.Error("failed to generate draw results", "err", err)
 		http.Error(w, fmt.Sprintf("failed to get draw results: %s", err.Error()), http.StatusInternalServerError)

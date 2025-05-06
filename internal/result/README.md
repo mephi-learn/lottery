@@ -4,11 +4,11 @@
 
 примеры эндпоинтов для тестов
 
-1. `GET /api/draws/{id}/results`: Получение выигрышной комбинации тиража.
+1. `GET /api/results/{id}`: Получение выигрышной комбинации тиража.
 
 ```bash
 curl --request GET \
-  --url http://localhost:8080/api/draws/3/results \
+  --url http://localhost:8080/api/results/3 \
   --header 'Content-Type: application/json' \
   --header 'User-Agent: insomnia/11.0.2'
 ```
@@ -58,11 +58,11 @@ id - id тикета
 }
 ```
 
-3.  `PUT /api/draws/{id}/results/generate (только ADMIN): генерация выигрышной комбинации для выбранной лотереи, идемпотентный. После него можно получить выигрышную комбинацию по `GET /api/draws/{id}/results`
+3.  `PUT /api/results/{id}/generate (только ADMIN): генерация выигрышной комбинации для выбранной лотереи, идемпотентный. После него можно получить выигрышную комбинацию по `GET /api/draws/{id}/results`
 
 ```bash
 curl --request PUT \
-  --url http://localhost:8080/api/draws/3/results/generate \
+  --url http://localhost:8080/api/results/3/generate \
   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' \
   --header 'Content-Type: application/json' \
   --header 'User-Agent: insomnia/11.0.2'

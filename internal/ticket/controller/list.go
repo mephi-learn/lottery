@@ -8,8 +8,16 @@ import (
 	"strconv"
 )
 
+type responseTicket struct {
+	Id          int    `json:"id"`
+	StatusName  string `json:"status_name"`
+	DrawId      int    `json:"draw_id"`
+	UserId      int    `json:"user_id"`
+	Combination []int  `json:"combination"`
+}
+
 type listAvailableTicketsResponse struct {
-	Tickets []models.Ticket `json:"tickets"`
+	Tickets []responseTicket `json:"tickets"`
 }
 
 func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
@@ -25,10 +33,22 @@ func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ticketsVal := make([]models.Ticket, 0, len(tickets))
+	ticketsVal := make([]responseTicket, 0, len(tickets))
 	for _, t := range tickets {
 		if t != nil {
-			ticketsVal = append(ticketsVal, *t)
+			ticketCombination, err := models.ParseTicketCombination(t.Data)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("failed get ticket combination: %s", err.Error()), http.StatusInternalServerError)
+				return
+			}
+
+			ticketsVal = append(ticketsVal, responseTicket{
+				Id:          t.Id,
+				StatusName:  t.Status.String(),
+				DrawId:      t.DrawId,
+				UserId:      t.UserId,
+				Combination: ticketCombination,
+			})
 		}
 	}
 

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"homework/internal/auth"
+	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
 	"net/http"
@@ -45,7 +46,7 @@ func WithService(svc paymentService) HandlerOption {
 type paymentService interface {
 	// Добавил инвойс id
 	RegisterInvoice(ctx context.Context, ticketId int) (invoiceId int, err error)
-	RegisterPayment(ctx context.Context, paymentId int, payment float64) (err error)
+	RegisterPayment(ctx context.Context, req *models.PaymentRequest) (err error)
 }
 
 type RouteOption func(*handler)

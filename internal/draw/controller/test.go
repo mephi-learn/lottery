@@ -39,11 +39,7 @@ func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(comb)
 	_, _ = w.Write([]byte{'\n', '\n'})
 
-	stat := map[string]int{}
-	for key, values := range list {
-		stat[key] = len(values)
-	}
-	stats, err := json.Marshal(stat)
+	stats, err := json.Marshal(list.Statistic)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
 		return
@@ -51,7 +47,7 @@ func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(stats)
 	_, _ = w.Write([]byte{'\n', '\n'})
 
-	out, err := json.MarshalIndent(list, "", "  ")
+	out, err := json.MarshalIndent(list.WinTickets, "", "  ")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
 		return

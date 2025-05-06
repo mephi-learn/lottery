@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"homework/internal/models"
 	"net/http"
@@ -37,6 +38,17 @@ func (h *handler) CancelDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := drawResponse{
+		Message: "draw has been canceled",
+		DrawId:  id,
+	}
+
+	result, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(fmt.Sprintf("draw was canceled, id = %d", id)))
+	_, _ = w.Write(result)
 }

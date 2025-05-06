@@ -45,7 +45,8 @@ func WithService(svc resultService) HandlerOption {
 
 type resultService interface {
 	GetDrawResults(ctx context.Context, drawId int) ([]int, error)                             // Получение выигрышной комбинации тиража.
-	GenerateDrawResults(ctx context.Context, drawId int) ([]int, error)                        // Генерация результатов тиража.
+	GetDrawWinResults(ctx context.Context, drawId int) (*models.DrawingResult, error)          // Получение статистики выигрышных билетов по тиражу.
+	Drawing(ctx context.Context, drawId int) ([]int, error)                                    // Генерация результатов тиража.
 	CheckTicketResult(ctx context.Context, ticketId, userId int) (*models.TicketResult, error) // Проверка результата по номеру билета.
 	CheckTicketsResult(ctx context.Context, userId int) ([]models.TicketResult, error)         // Проверка результата по всем билетам пользователя.
 }
@@ -53,8 +54,9 @@ type resultService interface {
 type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
-	mux.Handle("GET /api/draws/{id}/results", http.HandlerFunc(h.GetDrawResults))
-	mux.Handle("PUT /api/draws/{id}/results/generate", auth.Authenticated(h.GenerateDrawResults))
-	mux.Handle("GET /api/results/tickets/{id}/check", auth.Authenticated(h.CheckTicketResult)) // был /api/tickets/{id}/check-result
-	mux.Handle("GET /api/results/tickets", auth.Authenticated(h.CheckTicketsResult))
+	mux.Handle("POST /api/results/{id}/generate", auth.Authenticated(h.Drawing))                      // Проведение тиража
+	mux.Handle("GET /api/results/{draw_id}", http.HandlerFunc(h.GetDrawResults))                      // Отображение выигрышной комбинации тиража
+	mux.Handle("GET /api/results/tickets/{ticket_id}/check", auth.Authenticated(h.CheckTicketResult)) // был /api/tickets/{id}/check-result
+	mux.Handle("GET /api/results/tickets", auth.Authenticated(h.CheckTicketsResult))                  // Возвращает статистику по всем билетам текущего пользователя
+	mux.Handle("GET /api/results/{draw_id}/win", http.HandlerFunc(h.GetDrawWinResults))               // Статистика по билетам тиража
 }

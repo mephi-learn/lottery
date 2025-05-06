@@ -2,45 +2,10 @@ package service
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
+	"github.com/lib/pq"
 	"homework/internal/models"
 	"homework/pkg/errors"
-	"strconv"
-	"strings"
-
-	"github.com/lib/pq"
 )
-
-func ParseTicketCombination(combination string) (ticketNumbers []int, err error) {
-	data, err := base64.StdEncoding.DecodeString(combination)
-	if err != nil {
-		return nil, errors.New("unknown decode ticket data")
-	}
-	parts := strings.SplitN(string(data), ";", 2)
-
-	numberStr := parts[1]
-
-	digitStrings := strings.Split(numberStr, ",")
-	ticketNumbers = make([]int, 0, len(digitStrings))
-
-	for i, digitStr := range digitStrings {
-		digitStr = strings.TrimSpace(digitStr) // Handle potential spaces
-		if digitStr == "" {
-			err = fmt.Errorf("invalid ticket combination format: empty number string at index %d", i)
-			return
-		}
-
-		digit, parseErr := strconv.Atoi(digitStr)
-		if parseErr != nil {
-			err = fmt.Errorf("invalid ticket combination format: failed to parse number '%s' at index %d: %w", digitStr, i, parseErr)
-			return
-		}
-		ticketNumbers = append(ticketNumbers, digit)
-	}
-
-	return ticketNumbers, nil
-}
 
 // helper function to convert pq.Int64Array to []int
 func GetWinCombSlice(pqArray pq.Int64Array) []int {
@@ -90,7 +55,7 @@ func ProcessTicket(ctx context.Context, ticket *models.TicketStore, repo Reposit
 
 	drawWinCombination := GetWinCombSlice(drawRes.WinCombination)
 
-	ticketCombination, err := ParseTicketCombination(ticket.Data)
+	ticketCombination, err := models.ParseTicketCombination(ticket.Data)
 
 	if err != nil {
 		return nil, errors.Errorf("couldn't parse ticket info")

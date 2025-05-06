@@ -112,27 +112,28 @@ func main() {
 		drawcontroller.WithService(drawService),
 	))
 
-	resultlog := serverlog.WithGroup("result")
+	resultLog := serverlog.WithGroup("result")
 
 	// Инициализация репозитория Draw result.
 	resultRepo := start(resultrepository.NewRepository(
 		resultrepository.WithStorage(st),
-		resultrepository.WithLogger(resultlog.WithGroup("repository")),
+		resultrepository.WithLogger(resultLog.WithGroup("repository")),
 	))
 
 	// Инициализация сервиса DrawResult.
 	resultService := start(resultservice.NewResultService(
-		resultservice.WithDrawLogger(resultlog.WithGroup("service")),
-		resultservice.WithDrawRepository(resultRepo),
+		resultservice.WithResultLogger(resultLog.WithGroup("service")),
+		resultservice.WithResultRepository(resultRepo),
 		resultservice.WithLotteryService(lotteryService),
+		resultservice.WithDrawService(drawService),
 	))
 
 	// Инициализация контроллера DrawResult.
 	resultController := start(resultcontroller.NewHandler(
-		resultcontroller.WithLogger(resultlog.WithGroup("controller")),
+		resultcontroller.WithLogger(resultLog.WithGroup("controller")),
 		resultcontroller.WithService(resultService),
 	))
-	
+
 	// Родительский логгер для подсистем внутри сервиса ticket.
 	ticketlog := serverlog.WithGroup("ticket")
 

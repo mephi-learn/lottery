@@ -32,7 +32,7 @@ func (h *handler) GetDraw(w http.ResponseWriter, r *http.Request) {
 	drawOut := models.DrawOutput{
 		Id:        draw.Id,
 		Status:    status.String(),
-		Lottery:   lottery.Name(),
+		Lottery:   lottery.Type(),
 		SaleDate:  draw.SaleDate,
 		StartDate: draw.StartDate,
 	}

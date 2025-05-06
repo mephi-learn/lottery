@@ -6,7 +6,7 @@ import (
 	"homework/pkg/errors"
 )
 
-// Создание инвойс
+// CreateInvoice Создание инвойса
 func (r *repository) CreateInvoice(ctx context.Context, invoice models.Invoice) (int, error) {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
@@ -20,4 +20,14 @@ func (r *repository) CreateInvoice(ctx context.Context, invoice models.Invoice) 
 	}
 
 	return invoiceId, nil
+}
+
+func (r *repository) GetInvoice(ctx context.Context, invoiceId int) (*models.Invoice, error) {
+	invoice := models.Invoice{}
+	if err := r.db.QueryRowContext(ctx, "select id, user_id, ticket_id, status_id, date_invoice, price from invoices where id = $1", invoiceId).
+		Scan(&invoice.ID, &invoice.UserID, &invoice.TicketID, &invoice.Status, &invoice.RegisterTime, &invoice.Amount); err != nil {
+		return nil, errors.Errorf("failed to get invoice: %w", err)
+	}
+
+	return &invoice, nil
 }

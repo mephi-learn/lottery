@@ -14,8 +14,8 @@ func (s *drawService) CreateDraw(ctx context.Context, draw *models.DrawInput) (i
 		return -1, errors.Errorf("unknown status: %s", draw.Status)
 	}
 
-	// Получаем тип лотереи по её имени
-	lottery, err := s.lottery.LotteryByName(draw.Lottery)
+	// Получаем тип лотереи по её идентификатору
+	lottery, err := s.lottery.LotteryByType(draw.Lottery)
 	if err != nil {
 		return -1, errors.Errorf("unknown lottery: %w", err)
 	}

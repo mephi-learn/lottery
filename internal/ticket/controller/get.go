@@ -9,9 +9,7 @@ import (
 )
 
 type getTicketByIdResponse struct {
-	models.Ticket
-
-	StatusName string `json:"status_name"`
+	responseTicket
 }
 
 func (h *handler) GetTicketById(w http.ResponseWriter, r *http.Request) {
@@ -33,9 +31,20 @@ func (h *handler) GetTicketById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ticketCombination, err := models.ParseTicketCombination(ticket.Data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed get ticket combination: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
 	response := getTicketByIdResponse{
-		Ticket:     *ticket,
-		StatusName: ticket.Status.String(),
+		responseTicket: responseTicket{
+			Id:          ticket.Id,
+			StatusName:  ticket.Status.String(),
+			DrawId:      ticket.DrawId,
+			UserId:      ticket.UserId,
+			Combination: ticketCombination,
+		},
 	}
 
 	out, err := json.Marshal(response)

@@ -1,11 +1,16 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"homework/internal/models"
 	"net/http"
 	"strconv"
 )
+
+type getCreateTicketsResponse struct {
+	Message string `json:"message"`
+}
 
 func (h *handler) CreateTickets(w http.ResponseWriter, r *http.Request) {
 	user, err := models.UserFromContext(r.Context())
@@ -33,9 +38,16 @@ func (h *handler) CreateTickets(w http.ResponseWriter, r *http.Request) {
 
 	list, err := h.service.CreateTickets(r.Context(), drawId, num)
 
-	// TODO: вернуть число созданных билетов
-	out := fmt.Sprintf("created %d tickets", len(list))
+	resp := getCreateTicketsResponse{
+		Message: fmt.Sprintf("created %d tickets", len(list)),
+	}
+
+	result, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(out))
+	_, _ = w.Write(result)
 }

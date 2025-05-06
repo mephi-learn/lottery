@@ -20,10 +20,20 @@ type Repository interface {
 	GetUserTickets(ctx context.Context, userId int) ([]models.TicketStore, error)         // получение билетов пользователя
 }
 
+type DrawService interface {
+	PlannedDraw(ctx context.Context, drawId int) error
+	ActiveDraw(ctx context.Context, drawId int) error
+	CompletedDraw(ctx context.Context, drawId int) error
+	CancelDraw(ctx context.Context, drawId int) error
+	FailedDraw(ctx context.Context, drawId int) error
+	Drawing(ctx context.Context, drawId int, combination []int) (*models.DrawingResult, error)
+}
+
 type DrawOption func(*resultService) error
 
 type resultService struct {
 	repo    Repository
+	draw    DrawService
 	log     log.Logger
 	lottery LotteryService
 }
@@ -47,14 +57,14 @@ func NewResultService(opts ...DrawOption) (*resultService, error) {
 	return &svc, nil
 }
 
-func WithDrawLogger(logger log.Logger) DrawOption {
+func WithResultLogger(logger log.Logger) DrawOption {
 	return func(r *resultService) error {
 		r.log = logger
 		return nil
 	}
 }
 
-func WithDrawRepository(repo Repository) DrawOption {
+func WithResultRepository(repo Repository) DrawOption {
 	return func(r *resultService) error {
 		r.repo = repo
 		return nil
@@ -64,6 +74,13 @@ func WithDrawRepository(repo Repository) DrawOption {
 func WithLotteryService(lottery LotteryService) DrawOption {
 	return func(r *resultService) error {
 		r.lottery = lottery
+		return nil
+	}
+}
+
+func WithDrawService(draw DrawService) DrawOption {
+	return func(r *resultService) error {
+		r.draw = draw
 		return nil
 	}
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"homework/internal/models"
 	"homework/pkg/errors"
 	"time"
@@ -60,14 +61,16 @@ func (r *repository) LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*mo
 }
 
 func (r *repository) ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {
+	var userId sql.NullInt64
 	rows, err := r.db.QueryContext(ctx, `
-SELECT t.id, t.status_id, t.draw_id, data, user_id, lock_time
+SELECT t.id, t.status_id, t.draw_id, data, user_id
 FROM tickets t INNER JOIN draws d ON t.draw_id = d.id
 WHERE 1 = 1
     and d.status_id = $1
     and t.status_id = $2
     and t.draw_id = $3
-  	and t.user_id is null`, models.DrawStatusPlanned, models.TicketStatusReady, drawId)
+  	and t.user_id is null
+  	and t.lock_time is null`, models.DrawStatusPlanned, models.TicketStatusReady, drawId)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +81,11 @@ WHERE 1 = 1
 	var tickets []*models.Ticket
 	for rows.Next() {
 		var ticket models.Ticket
-		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &ticket.UserId, &ticket.LockTime); err != nil {
+		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &userId); err != nil {
 			return nil, err
+		}
+		if userId.Valid {
+			ticket.UserId = int(userId.Int64)
 		}
 		tickets = append(tickets, &ticket)
 	}
@@ -129,8 +135,9 @@ func (r *repository) MarkTicketAsBought(ctx context.Context, ticketId int) error
 }
 
 func (r *repository) ReserveTicket(ctx context.Context, ticketId int, userId int, lockTime time.Time) error {
-	_, err := r.db.ExecContext(ctx, "UPDATE tickets SET status_id = $1, user_id = $2, lock_time = $3 WHERE id = $4",
-		models.TicketStatusReady, userId, lockTime, ticketId)
+	var resultTicketId int
+	err := r.db.QueryRowContext(ctx, "UPDATE tickets SET status_id = $1, user_id = $2, lock_time = $3 WHERE id = $4 and lock_time is null returning id",
+		models.TicketStatusReady, userId, lockTime, ticketId).Scan(&resultTicketId)
 	if err != nil {
 		return errors.Errorf("failed to reserve ticket: %w", err)
 	}

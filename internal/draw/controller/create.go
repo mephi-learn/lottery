@@ -7,6 +7,11 @@ import (
 	"net/http"
 )
 
+type drawResponse struct {
+	Message string `json:"message"`
+	DrawId  int    `json:"draw_id"`
+}
+
 func (h *handler) CreateDraw(w http.ResponseWriter, r *http.Request) {
 	user, err := models.UserFromContext(r.Context())
 	if err != nil {
@@ -33,6 +38,18 @@ func (h *handler) CreateDraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := drawResponse{
+		Message: "draw has been created",
+		DrawId:  drawId,
+	}
+
+	result, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(fmt.Sprintf("draw was created, id = %d", drawId)))
+	_, _ = w.Write(result)
 }

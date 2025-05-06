@@ -20,3 +20,8 @@ type DrawResultStore struct {
 	LotteryType    string        `json:"lottery_type"`
 	WinCombination pq.Int64Array `json:"win_combination" db:"win_combination"`
 }
+
+type DrawingResult struct {
+	WinTickets map[string][]*Ticket
+	Statistic  map[string]int
+}

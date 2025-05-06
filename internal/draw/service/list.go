@@ -22,7 +22,7 @@ func (s *drawService) ListActiveDraw(ctx context.Context) ([]*models.DrawOutput,
 		resp[i] = &models.DrawOutput{
 			Id:        draw.Id,
 			Status:    status.String(),
-			Lottery:   lottery.Name(),
+			Lottery:   lottery.Type(),
 			SaleDate:  draw.SaleDate,
 			StartDate: draw.StartDate,
 		}

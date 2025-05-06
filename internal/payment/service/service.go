@@ -10,6 +10,7 @@ import (
 // Repository реализует интерфейс репозитория сервиса покупки билетов.
 type Repository interface {
 	CreateInvoice(ctx context.Context, invoice models.Invoice) (invoiceId int, err error) // - Обработчки бд
+	GetInvoice(ctx context.Context, invoiceId int) (*models.Invoice, error)
 }
 
 // TicketService реализует интерфейс сервиса лотереи.

@@ -9,9 +9,9 @@ import (
 
 func (h *handler) GetDrawResults(w http.ResponseWriter, r *http.Request) {
 	// Парсим входные данные
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := strconv.Atoi(r.PathValue("draw_id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid id: %s", r.PathValue("id")), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("invalid id: %s", r.PathValue("draw_id")), http.StatusBadRequest)
 		return
 	}
 

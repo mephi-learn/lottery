@@ -50,7 +50,7 @@ type drawService interface {
 	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)             // Информация по тиражу.
 	LotteryByType(lotteryType string) (models.Lottery, error)                       // Получение лотереи по её типа
 
-	Drawing(ctx context.Context, drawId int, combination []int) (map[string][]*models.Ticket, error)
+	Drawing(ctx context.Context, drawId int, combination []int) (*models.DrawingResult, error)
 }
 
 type RouteOption func(*handler)

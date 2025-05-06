@@ -7,6 +7,11 @@ import (
 	"strconv"
 )
 
+type response struct {
+	Message   string `json:"message"`
+	InvoiceId int    `json:"invoice_id"`
+}
+
 // RegisterInvoice регистрация инвойса. (по ticketid - создается инвойс текущему пользователю)
 func (h *handler) RegisterInvoice(w http.ResponseWriter, r *http.Request) {
 	ticketId, err := strconv.Atoi(r.PathValue("ticket_id"))
@@ -21,6 +26,18 @@ func (h *handler) RegisterInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := response{
+		Message:   "invoice has been created",
+		InvoiceId: invoiceId,
+	}
+
+	result, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(invoiceId)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(result)
 }
