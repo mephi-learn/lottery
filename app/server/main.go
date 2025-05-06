@@ -11,6 +11,8 @@ import (
 	drawcontroller "homework/internal/draw/controller"
 	drawrepository "homework/internal/draw/repository"
 	drawservice "homework/internal/draw/service"
+	exportcontroller "homework/internal/export"
+	exportservice "homework/internal/export/service"
 	lotteryservice "homework/internal/lottery/service"
 	"homework/internal/models"
 	paymentcontroller "homework/internal/payment/controller"
@@ -153,6 +155,18 @@ func main() {
 		paymentcontroller.WithService(paymentService),
 	))
 
+	// Родительский логгер для подсистем внутри сервиса export.
+	exportlog := serverlog.WithGroup("export")
+
+	// Инициализация сервиса Export.
+	exportService := start(exportservice.New())
+
+	// Инициализация контроллера Export.
+	exportController := start(exportcontroller.NewHandler(
+		exportcontroller.WithLogger(exportlog.WithGroup("controller")),
+		exportcontroller.WithService(exportService),
+	))
+
 	// Инициализация HTTP сервера.
 	http := start(server.New(cfg.Server.HTTP,
 		server.WithLogger(serverlog.WithGroup("server")),
@@ -160,6 +174,7 @@ func main() {
 		server.WithController(drawController),
 		server.WithController(ticketController),
 		server.WithController(paymentController),
+		server.WithController(exportController),
 	))
 
 	go manager.run(http.ListenAndServe)
