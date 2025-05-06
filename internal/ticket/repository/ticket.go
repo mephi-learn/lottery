@@ -130,7 +130,7 @@ func (r *repository) MarkTicketAsBought(ctx context.Context, ticketId int) error
 
 func (r *repository) ReserveTicket(ctx context.Context, ticketId int, userId int, lockTime time.Time) error {
 	_, err := r.db.ExecContext(ctx, "UPDATE tickets SET status_id = $1, user_id = $2, lock_time = $3 WHERE id = $4",
-		models.TicketStatusBought, userId, lockTime, ticketId)
+		models.TicketStatusReady, userId, lockTime, ticketId)
 	if err != nil {
 		return errors.Errorf("failed to reserve ticket: %w", err)
 	}
