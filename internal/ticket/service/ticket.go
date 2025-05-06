@@ -165,16 +165,41 @@ func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, da
 
 // ReserveTicket маркирует билет зарезервированным (выставляет время окончания в поле lock_time)
 func (s *ticketService) ReserveTicket(ctx context.Context, ticketId int, userId int) error {
-	return nil
+	lockTime := time.Now().Add(ticketLockTime * time.Minute)
+	return s.repo.ReserveTicket(ctx, ticketId, userId, lockTime)
 }
 
 // BoughtTicket маркирует билет купленным (стирает время окончания в поле lock_time и меняет статус на КУПЛЕН)
 func (s *ticketService) BoughtTicket(ctx context.Context, ticketId int) error {
-	return nil
+	return s.repo.MarkTicketAsBought(ctx, ticketId)
 }
 
 // CancelTicket делает билет снова доступным для покупки (стирает время окончания в поле lock_time)
 func (s *ticketService) CancelTicket(ctx context.Context, ticketId int) error {
-	// Тут нужно вызвать ОТДЕЛЬНУЮ функцию, отменяющую билет, эта же функция будет вызываться шедулером, для отмены билетов с просроченной оплатой
-	return nil
+	return s.repo.CancelTicket(ctx, ticketId)
+}
+
+func (s *ticketService) StartExpiredTicketsCleaner(ctx context.Context) {
+	ticker := time.NewTicker(time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				ticker.Stop()
+				return
+			case <-ticker.C:
+				ticketIds, err := s.repo.GetExpiredTickets(ctx)
+				if err != nil {
+					s.log.ErrorContext(ctx, "failed to get expired tickets", "error", err)
+					continue
+				}
+
+				for _, id := range ticketIds {
+					if err := s.repo.CancelTicket(ctx, id); err != nil {
+						s.log.ErrorContext(ctx, "failed to cancel expired ticket", "ticket_id", id, "error", err)
+					}
+				}
+			}
+		}
+	}()
 }

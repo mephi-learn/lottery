@@ -125,6 +125,8 @@ func main() {
 		ticketservice.WithDrawService(drawService),
 	))
 
+	ticketService.StartExpiredTicketsCleaner(ctx)
+
 	// Инициализация контроллера Ticket.
 	ticketController := start(ticketcontroller.NewHandler(
 		ticketcontroller.WithLogger(ticketlog.WithGroup("controller")),
