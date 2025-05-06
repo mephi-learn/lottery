@@ -18,6 +18,7 @@ type Repository interface {
 	SaveWinCombination(ctx context.Context, drawId int, winCombination []int) error       // сохранение выигрышной комбинации
 	GetUserTicket(ctx context.Context, ticketId, userId int) (*models.TicketStore, error) // получение билета пользователя
 	GetUserTickets(ctx context.Context, userId int) ([]models.TicketStore, error)         // получение билетов пользователя
+	GetCompletedDraws(ctx context.Context) ([]*models.DrawResultStore, error)             // Получение списка завершённых тиражей
 }
 
 type DrawService interface {

@@ -180,6 +180,30 @@ func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, er
 	return draws, nil
 }
 
+func (r *repository) ListCompletedDraw(ctx context.Context) ([]models.DrawStore, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE status_id = $1", models.DrawStatusCompleted)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var draws []models.DrawStore
+	for rows.Next() {
+		var draw models.DrawStore
+		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+			return draws, err
+		}
+		draws = append(draws, draw)
+	}
+	if err = rows.Err(); err != nil {
+		return draws, err
+	}
+
+	return draws, nil
+}
+
 // Получение тиража по id билета (не используется пока что)
 func (r *repository) GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error) {
 	draw := models.DrawStore{}

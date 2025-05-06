@@ -2,13 +2,12 @@ package service
 
 import (
 	"context"
-	"github.com/lib/pq"
 	"homework/internal/models"
 	"homework/pkg/errors"
 )
 
 // helper function to convert pq.Int64Array to []int
-func GetWinCombSlice(pqArray pq.Int64Array) []int {
+func GetWinCombSlice(pqArray []int) []int {
 	winningNumbersInt := make([]int, len(pqArray))
 
 	for i, val64 := range pqArray {

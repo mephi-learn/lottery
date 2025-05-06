@@ -11,7 +11,7 @@ import (
 	drawcontroller "homework/internal/draw/controller"
 	drawrepository "homework/internal/draw/repository"
 	drawservice "homework/internal/draw/service"
-	exportcontroller "homework/internal/export"
+	exportcontroller "homework/internal/export/controller"
 	exportservice "homework/internal/export/service"
 	lotteryservice "homework/internal/lottery/service"
 	resultcontroller "homework/internal/result/controller"
@@ -184,14 +184,18 @@ func main() {
 	))
 
 	// Родительский логгер для подсистем внутри сервиса export.
-	exportlog := serverlog.WithGroup("export")
+	exportLog := serverlog.WithGroup("export")
 
 	// Инициализация сервиса Export.
-	exportService := start(exportservice.New())
+	exportService := start(exportservice.NewExportService(
+		exportservice.WithExportLogger(exportLog),
+		exportservice.WithDrawService(drawService),
+		exportservice.WithResultService(resultService),
+	))
 
 	// Инициализация контроллера Export.
 	exportController := start(exportcontroller.NewHandler(
-		exportcontroller.WithLogger(exportlog.WithGroup("controller")),
+		exportcontroller.WithLogger(exportLog.WithGroup("controller")),
 		exportcontroller.WithService(exportService),
 	))
 

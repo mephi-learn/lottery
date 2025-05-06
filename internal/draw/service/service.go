@@ -18,7 +18,8 @@ type Repository interface {
 	FailedDraw(ctx context.Context, drawId int) error                               // Перевод тиража в статус испорченного, все деньги возвращаются клиентам
 	SetDrawSaleDate(ctx context.Context, drawId int, begin time.Time) error         // Установка времени начала продажи билетов
 	SetDrawStartDate(ctx context.Context, drawId int, start time.Time) error        // Установка времени начала тиража
-	ListActiveDraw(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка
+	ListActiveDraw(ctx context.Context) ([]models.DrawStore, error)                 // Получение списка активных тиражей (в планировании и проводящихся в данный момент)
+	ListCompletedDraw(ctx context.Context) ([]models.DrawStore, error)              // Получение списка успешно завершённых тиражей
 	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
 	LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error)  // Получение списка билетов по идентификатору тиража
 }

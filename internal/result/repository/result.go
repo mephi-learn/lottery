@@ -36,6 +36,38 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 	return &drawRes, nil
 }
 
+// GetCompletedDraw get draw status and it's winning combination (if there is one already)
+func (r *repository) GetCompletedDraws(ctx context.Context) ([]*models.DrawResultStore, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT
+			d.id,
+			d.status_id,
+			d.lottery_type,
+			r.win_combination
+		FROM draws d LEFT JOIN draw_results r ON r.draw_id = d.id
+		WHERE d.status_id = $1`, models.DrawStatusCompleted)
+	if err != nil {
+		return nil, errors.Errorf("failed to get draw info: %w", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var draws []*models.DrawResultStore
+	for rows.Next() {
+		var draw models.DrawResultStore
+		if err = rows.Scan(&draw.Id, &draw.DrawStatusId, &draw.LotteryType, &draw.WinCombination); err != nil {
+			return draws, err
+		}
+		draws = append(draws, &draw)
+	}
+	if err = rows.Err(); err != nil {
+		return draws, err
+	}
+
+	return draws, nil
+}
+
 func (r *repository) SaveWinCombination(ctx context.Context, drawId int, winCombination []int) error {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO draw_results (draw_id, win_combination)

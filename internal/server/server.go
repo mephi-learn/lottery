@@ -1,7 +1,7 @@
 package server
 
 import (
-	"homework/internal/export"
+	"homework/internal/export/controller"
 	"homework/pkg/errors"
 	"net"
 	"net/http"
@@ -46,7 +46,7 @@ func New(config Config, opts ...Option) (*Server, error) {
 
 	mux := &http.ServeMux{}
 
-	exportHandler, err := export.NewHandler(export.WithLogger(server.log))
+	exportHandler, err := controller.NewHandler(controller.WithLogger(server.log))
 	if err != nil {
 		return nil, err
 	}

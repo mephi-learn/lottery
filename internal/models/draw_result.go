@@ -2,9 +2,9 @@ package models
 
 import (
 	"time"
-
-	"github.com/lib/pq"
 )
+
+type WinTickets map[string][]*Ticket
 
 type DrawResult struct {
 	Id             int       `json:"id"`
@@ -14,14 +14,14 @@ type DrawResult struct {
 }
 
 type DrawResultStore struct {
-	Id             int           `json:"id"`
-	DrawId         int           `json:"draw_id"`
-	DrawStatusId   int           `json:"status_id"`
-	LotteryType    string        `json:"lottery_type"`
-	WinCombination pq.Int64Array `json:"win_combination" db:"win_combination"`
+	Id             int    `json:"id"`
+	DrawId         int    `json:"draw_id"`
+	DrawStatusId   int    `json:"status_id"`
+	LotteryType    string `json:"lottery_type"`
+	WinCombination []int  `json:"win_combination" db:"win_combination"`
 }
 
 type DrawingResult struct {
-	WinTickets map[string][]*Ticket
+	WinTickets WinTickets
 	Statistic  map[string]int
 }
