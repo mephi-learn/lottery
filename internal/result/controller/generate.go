@@ -1,0 +1,50 @@
+package controller
+
+import (
+	"encoding/json"
+	"fmt"
+	"homework/internal/models"
+	"net/http"
+	"strconv"
+)
+
+func (h *handler) GenerateDrawResults(w http.ResponseWriter, r *http.Request) {
+	user, err := models.UserFromContext(r.Context())
+	if err != nil {
+		http.Error(w, "authentication needed", http.StatusBadRequest)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, "permission denied, admin only", http.StatusForbidden)
+		return
+	}
+
+	// Парсим входные данные
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("invalid id: %s", r.PathValue("id")), http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.service.GenerateDrawResults(r.Context(), id)
+	if err != nil {
+		h.log.Error("failed to generate draw results", "err", err)
+		http.Error(w, fmt.Sprintf("failed to get draw results: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	responsePayload := map[string]interface{}{
+		"result": result,
+	}
+	data, err := json.Marshal(responsePayload)
+	if err != nil {
+		h.log.Error("failed to marshal response", "err", err)
+		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(data)
+}

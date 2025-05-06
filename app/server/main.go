@@ -12,6 +12,10 @@ import (
 	drawrepository "homework/internal/draw/repository"
 	drawservice "homework/internal/draw/service"
 	lotteryservice "homework/internal/lottery/service"
+	resultcontroller "homework/internal/result/controller"
+	resultrepository "homework/internal/result/repository"
+	resultservice "homework/internal/result/service"
+
 	"homework/internal/models"
 	paymentcontroller "homework/internal/payment/controller"
 	paymentrepository "homework/internal/payment/repository"
@@ -108,6 +112,27 @@ func main() {
 		drawcontroller.WithService(drawService),
 	))
 
+	resultlog := serverlog.WithGroup("result")
+
+	// Инициализация репозитория Draw result.
+	resultRepo := start(resultrepository.NewRepository(
+		resultrepository.WithStorage(st),
+		resultrepository.WithLogger(resultlog.WithGroup("repository")),
+	))
+
+	// Инициализация сервиса DrawResult.
+	resultService := start(resultservice.NewResultService(
+		resultservice.WithDrawLogger(resultlog.WithGroup("service")),
+		resultservice.WithDrawRepository(resultRepo),
+		resultservice.WithLotteryService(lotteryService),
+	))
+
+	// Инициализация контроллера DrawResult.
+	resultController := start(resultcontroller.NewHandler(
+		resultcontroller.WithLogger(resultlog.WithGroup("controller")),
+		resultcontroller.WithService(resultService),
+	))
+	
 	// Родительский логгер для подсистем внутри сервиса ticket.
 	ticketlog := serverlog.WithGroup("ticket")
 
@@ -160,6 +185,7 @@ func main() {
 		server.WithLogger(serverlog.WithGroup("server")),
 		server.WithController(authController),
 		server.WithController(drawController),
+		server.WithController(resultController),
 		server.WithController(ticketController),
 		server.WithController(paymentController),
 	))

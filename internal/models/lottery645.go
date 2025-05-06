@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"homework/pkg/errors"
+	"io"
 	"math/big"
 	"strconv"
 	"strings"
@@ -252,4 +253,8 @@ func (l *Lottery645) checkUniqCombination(combination []int, newTickets ...*lott
 	}
 
 	return true
+}
+
+func (l *Lottery645) GenerateWinningCombination(randReader io.Reader) ([]int, error) {
+	return generateUniqueRandomNumbers(randReader, l645combinationLength, l645minAllowDigit, l645maxAllowDigit)
 }

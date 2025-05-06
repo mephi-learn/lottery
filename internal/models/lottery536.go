@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"homework/pkg/errors"
+	"io"
 	"math/big"
 	"strconv"
 	"strings"
@@ -12,9 +13,9 @@ import (
 
 const (
 	l536id                = "5from36"
-	l535combinationLength = 5
+	l536combinationLength = 5
 	l536minAllowDigit     = 1
-	k536maxAllowDigit     = 36
+	l536maxAllowDigit     = 36
 )
 
 type lottery536Ticket struct {
@@ -89,13 +90,13 @@ func (l *Lottery536) CreateTickets(drawId int, num int) ([]*Ticket, error) {
 	}
 
 	newTickets := make([]*lottery536Ticket, 0, num)
-	maxDigitIndex := big.NewInt(k536maxAllowDigit - 1)
+	maxDigitIndex := big.NewInt(l536maxAllowDigit - 1)
 	for range num {
 
 		// Создаём уникальную комбинацию чисел
-		combination := make([]int, l535combinationLength)
+		combination := make([]int, l536combinationLength)
 		for l.validateCombination(combination) != nil || !l.checkUniqCombination(combination, newTickets...) {
-			for i := range l535combinationLength {
+			for i := range l536combinationLength {
 				randomNumber, err := rand.Int(rand.Reader, maxDigitIndex)
 				if err != nil {
 					return nil, errors.Errorf("failed to create combination: %w", err)
@@ -117,13 +118,13 @@ func (l *Lottery536) CreateTickets(drawId int, num int) ([]*Ticket, error) {
 }
 
 func (l *Lottery536) Drawing(combination []int) (map[string][]*Ticket, error) {
-	if len(combination) != l535combinationLength {
+	if len(combination) != l536combinationLength {
 		return nil, errors.New("invalid combination")
 	}
 
 	result := map[string][]*Ticket{}
 	for _, ticket := range l.Tickets {
-		matched := l535combinationLength
+		matched := l536combinationLength
 		for i := range combination {
 			if combination[i] != ticket.Combination[i] {
 				matched = i
@@ -151,7 +152,7 @@ func (l *Lottery536) fromTicket(rawTicket *Ticket) (*lottery536Ticket, error) {
 		return nil, errors.New("unknown ticket format")
 	}
 
-	if len(split[1]) != l535combinationLength*3-1 {
+	if len(split[1]) != l536combinationLength*3-1 {
 		return nil, errors.New("invalid ticket combination length")
 	}
 
@@ -199,7 +200,7 @@ func (l *Lottery536) toTicket(rawTicket *lottery536Ticket) *Ticket {
 
 // Производит проверку на соответствие комбинации цифр правилам лотереи.
 func (l *Lottery536) validateCombination(combination []int) error {
-	if len(combination) != l535combinationLength {
+	if len(combination) != l536combinationLength {
 		return errors.New("invalid combination length")
 	}
 
@@ -207,7 +208,7 @@ func (l *Lottery536) validateCombination(combination []int) error {
 
 	// Проверяем что все числа из комбинации укладываются в допустимый диапазон
 	for _, digit := range combination {
-		if digit < l536minAllowDigit || digit > k536maxAllowDigit {
+		if digit < l536minAllowDigit || digit > l536maxAllowDigit {
 			return errors.New("invalid digit in combination: " + strconv.Itoa(digit))
 		}
 		uniq[digit] = struct{}{}
@@ -252,4 +253,8 @@ func (l *Lottery536) checkUniqCombination(combination []int, newTickets ...*lott
 	}
 
 	return true
+}
+
+func (l *Lottery536) GenerateWinningCombination(randReader io.Reader) ([]int, error) {
+	return generateUniqueRandomNumbers(randReader, l536combinationLength, l536minAllowDigit, l536maxAllowDigit)
 }
