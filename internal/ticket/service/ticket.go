@@ -180,23 +180,32 @@ func (s *ticketService) CancelTicket(ctx context.Context, ticketId int) error {
 }
 
 func (s *ticketService) StartExpiredTicketsCleaner(ctx context.Context) {
+	s.log.InfoContext(ctx, "starting expired tickets cleaner")
 	ticker := time.NewTicker(time.Minute)
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				ticker.Stop()
+				s.log.InfoContext(ctx, "expired tickets cleaner stopped")
 				return
 			case <-ticker.C:
+				s.log.InfoContext(ctx, "checking for expired tickets")
 				ticketIds, err := s.repo.GetExpiredTickets(ctx)
 				if err != nil {
 					s.log.ErrorContext(ctx, "failed to get expired tickets", "error", err)
 					continue
 				}
 
+				if len(ticketIds) > 0 {
+					s.log.InfoContext(ctx, "found expired tickets", "count", len(ticketIds))
+				}
+
 				for _, id := range ticketIds {
 					if err := s.repo.CancelTicket(ctx, id); err != nil {
 						s.log.ErrorContext(ctx, "failed to cancel expired ticket", "ticket_id", id, "error", err)
+					} else {
+						s.log.InfoContext(ctx, "cancelled expired ticket", "ticket_id", id)
 					}
 				}
 			}
