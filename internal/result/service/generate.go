@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
 	"homework/internal/models"
 	"homework/pkg/errors"
 )
@@ -34,7 +33,7 @@ func (s *resultService) Drawing(ctx context.Context, drawId int) ([]int, error) 
 	}
 
 	// Generate the winning numbers based on the lottery type
-	winningNumbers, err := lottery.GenerateWinningCombination(rand.Reader)
+	winningNumbers, err := lottery.GenerateWinningCombination()
 	if err != nil {
 		_ = s.draw.FailedDraw(ctx, drawId)
 		return nil, errors.Errorf("failed to generate winning numbers: %w", err)
@@ -49,7 +48,7 @@ func (s *resultService) Drawing(ctx context.Context, drawId int) ([]int, error) 
 
 	_ = s.draw.CompletedDraw(ctx, drawId)
 
-	//tickets, err := s.draw.Drawing(ctx, drawId, winningNumbers)
+	//tickets, err := s.draw.DrawingStatistic(ctx, drawId, winningNumbers)
 	//if err != nil {
 	//
 	//}

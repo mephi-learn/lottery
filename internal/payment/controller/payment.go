@@ -34,7 +34,7 @@ func (h *handler) RegisterPayment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// mockPaymentData := 1000.5 // просто временный мок
-	//h.service.RegisterPayment(request.Context(), mockPaymentData)
+	// h.service.RegisterPayment(request.Context(), mockPaymentData)
 	// invoice_id
 
 	respPay := ResponsePayment{

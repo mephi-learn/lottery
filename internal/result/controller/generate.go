@@ -31,6 +31,7 @@ func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("failed to generate draw results", "err", err)
 		http.Error(w, fmt.Sprintf("failed to get draw results: %s", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -41,6 +42,7 @@ func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("failed to marshal response", "err", err)
 		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+
 		return
 	}
 

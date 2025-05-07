@@ -11,7 +11,6 @@ import (
 
 // RegisterPayment регистрация платежа.
 func (s *paymentService) RegisterPayment(ctx context.Context, req *models.PaymentRequest) (err error) {
-
 	invoice, err := s.repo.GetInvoice(ctx, req.InvoiceID)
 	if err != nil {
 		return errors.Errorf("failed to recieve invoice info: %w", err)

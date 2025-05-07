@@ -13,7 +13,7 @@ type ResponseInvoice struct {
 	InvoiceId int    `json:"invoice_id"`
 }
 
-// RegisterInvoice регистрация инвойса. (по ticketid - создается инвойс текущему пользователю)
+// RegisterInvoice регистрация инвойса. (по ticketid - создается инвойс текущему пользователю).
 func (h *handler) RegisterInvoice(w http.ResponseWriter, r *http.Request) {
 	ticketId, err := strconv.Atoi(r.PathValue("ticket_id"))
 	if err != nil {

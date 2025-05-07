@@ -20,7 +20,7 @@ type Repository interface {
 // TicketService реализует интерфейс сервиса лотереи.
 type TicketService interface {
 	ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error)
-	CreateReservedTicket(ctx context.Context, drawId int, data string) (*models.Ticket, error)
+	CreateReservedTicket(ctx context.Context, drawId int, combination []int) (*models.Ticket, error)
 	ReserveTicket(ctx context.Context, ticketId int, userId int) error
 	BoughtTicket(ctx context.Context, ticketId int) error
 	CancelTicket(ctx context.Context, ticketId int) error

@@ -8,8 +8,7 @@ import (
 )
 
 // Repository реализует интерфейс репозитория сервиса покупки билетов.
-type Repository interface {
-}
+type Repository interface{}
 
 type DrawService interface {
 	ListCompletedDraw(ctx context.Context) ([]*models.DrawOutput, error)

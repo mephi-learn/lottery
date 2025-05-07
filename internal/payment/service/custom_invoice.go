@@ -2,10 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"homework/internal/models"
 	"homework/pkg/errors"
-	"strings"
 	"time"
 )
 
@@ -16,9 +14,7 @@ func (s *paymentService) RegisterCustomInvoice(ctx context.Context, drawId int, 
 		return -1, errors.New("unauthenticated user")
 	}
 
-	data := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(combination)), ","), "[]")
-
-	ticket, err := s.ticket.CreateReservedTicket(ctx, drawId, data)
+	ticket, err := s.ticket.CreateReservedTicket(ctx, drawId, combination)
 	if err != nil {
 		return -1, errors.Errorf("failed to reserve custom ticket: %w", err)
 	}

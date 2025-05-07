@@ -76,5 +76,4 @@ func (s *resultService) GetCompletedDraws(ctx context.Context) ([]*models.DrawRe
 	//}
 
 	return list, nil
-
 }

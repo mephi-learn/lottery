@@ -19,6 +19,7 @@ func (h *handler) GetDrawWinResults(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("failed to get draw results", "err", err)
 		http.Error(w, fmt.Sprintf("failed to get draw results: %s", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
 

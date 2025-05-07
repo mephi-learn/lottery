@@ -14,22 +14,23 @@ import (
 	exportcontroller "homework/internal/export/controller"
 	exportservice "homework/internal/export/service"
 	lotteryservice "homework/internal/lottery/service"
+	"homework/internal/models"
 	resultcontroller "homework/internal/result/controller"
 	resultrepository "homework/internal/result/repository"
 	resultservice "homework/internal/result/service"
-
-	"homework/internal/models"
-	paymentcontroller "homework/internal/payment/controller"
-	paymentrepository "homework/internal/payment/repository"
-	paymentservice "homework/internal/payment/service"
 	"homework/internal/server"
 	"homework/internal/storage"
-	ticketcontroller "homework/internal/ticket/controller"
-	ticketrepository "homework/internal/ticket/repository"
-	ticketservice "homework/internal/ticket/service"
 	"homework/pkg/log"
 	"os"
 	"os/signal"
+
+	paymentcontroller "homework/internal/payment/controller"
+	paymentrepository "homework/internal/payment/repository"
+	paymentservice "homework/internal/payment/service"
+
+	ticketcontroller "homework/internal/ticket/controller"
+	ticketrepository "homework/internal/ticket/repository"
+	ticketservice "homework/internal/ticket/service"
 )
 
 func main() {
@@ -87,10 +88,8 @@ func main() {
 		lotteryservice.WithLogger(lotteryLog.WithGroup("service")),
 	))
 
-	var lottery536 *models.Lottery536
-	lotteryService.RegisterLottery(lottery536)
-	var lottery645 *models.Lottery645
-	lotteryService.RegisterLottery(lottery645)
+	lotteryService.RegisterLottery(models.NewLottery5from36())
+	lotteryService.RegisterLottery(models.NewLottery6from45())
 
 	// Родительский логгер для подсистем внутри сервиса draw.
 	drawlog := serverlog.WithGroup("draw")

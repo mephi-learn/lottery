@@ -132,6 +132,7 @@ func (r *repository) MarkTicketAsBought(ctx context.Context, ticketId int) error
 	if err != nil {
 		return errors.Errorf("failed to update ticket status: %w", err)
 	}
+
 	return nil
 }
 
@@ -145,6 +146,7 @@ returning id`,
 	if err != nil {
 		return errors.Errorf("failed to reserve ticket: %w", err)
 	}
+
 	return nil
 }
 
@@ -154,6 +156,7 @@ func (r *repository) CancelTicket(ctx context.Context, ticketId int) error {
 	if err != nil {
 		return errors.Errorf("failed to cancel ticket: %w", err)
 	}
+
 	return nil
 }
 
