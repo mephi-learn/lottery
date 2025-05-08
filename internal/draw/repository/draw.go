@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"homework/internal/models"
 	"homework/pkg/errors"
 	"time"
@@ -30,11 +29,7 @@ func (r *repository) CreateDraw(ctx context.Context, draw *models.DrawStore) (in
 func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error) {
 	draw := models.DrawStore{}
 	if err := r.db.QueryRowContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = $1", drawId).Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to create draw: %w", err)
-		}
-
-		return nil, nil
+		return nil, errors.Errorf("failed to get draw: %w", err)
 	}
 
 	return &draw, nil
@@ -204,12 +199,12 @@ func (r *repository) ListCompletedDraw(ctx context.Context) ([]models.DrawStore,
 	return draws, nil
 }
 
-// Получение тиража по идентификатору билета
+// GetDrawByTicketId получение тиража по идентификатору билета
 func (r *repository) GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error) {
 	draw := models.DrawStore{}
 	if err := r.db.QueryRowContext(ctx, "SELECT id, cost, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = (select draw_id from tickets where id = $1)", ticketId).Scan(&draw.Id, &draw.Cost, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to get draw: %w", err)
+			return nil, errors.Errorf("failed to get draw by ticket id: %w", err)
 		}
 
 		return nil, nil

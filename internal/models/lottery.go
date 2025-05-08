@@ -13,14 +13,14 @@ import (
 )
 
 type Lottery interface {
-	Name() string                                                            // Название лотереи ("5 из 36")
-	Type() string                                                            // Тип лотереи (5from36)
-	Create() Lottery                                                         // Создать экземпляр лотереи
+	Name() string                                                            // Название лотереи ("5 из 36", "6 из 45" и т.д.)
+	Type() string                                                            // Тип лотереи (5from36, 6from45, etc...)
+	Create() Lottery                                                         // Создать новый экземпляр лотереи
 	AddTickets([]*Ticket) error                                              // Добавить билеты в лотерею
-	AddTicketWithCombination(drawId int, combination []int) (*Ticket, error) // Создать билет с указанными номерами
-	CreateTickets(drawId int, num int) ([]*Ticket, error)                    // Создать новые билеты
-	Drawing(combination []int) (map[string][]*Ticket, error)                 // Провести розыгрыш
-	GenerateWinningCombination() ([]int, error)                              // Сгенерировать выигрышную комбинацию
+	AddTicketWithCombination(drawId int, combination []int) (*Ticket, error) // Создать билет с указанными номерами и добавить его в лотерею
+	CreateTickets(drawId int, num int) ([]*Ticket, error)                    // Создать новые билеты с уникальными номерами и добавить их в лотерею
+	Drawing(combination []int) (map[string][]*Ticket, error)                 // Провести розыгрыш (отсортировать билеты по выигрышным комбинациям)
+	GenerateWinningCombination() ([]int, error)                              // Сгенерировать выигрышную комбинацию, но не применять её
 }
 
 func NewLottery5from36() Lottery {

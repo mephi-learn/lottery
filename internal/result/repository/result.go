@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"homework/internal/models"
 	"homework/pkg/errors"
 
@@ -27,11 +26,7 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 		&drawRes.LotteryType,
 		&winCombination,
 	); err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to get draw info: %w", err)
-		}
-
-		return nil, nil
+		return nil, errors.Errorf("failed to get draw info: %w", err)
 	}
 
 	drawRes.WinCombination = make([]int, len(winCombination))
@@ -102,9 +97,7 @@ func (r *repository) GetUserTicket(ctx context.Context, ticketId, userId int) (*
 		&ticket.Data,
 		&ticket.UserId,
 	); err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to get ticket info: %w", err)
-		}
+		return nil, errors.Errorf("failed to get ticket info: %w", err)
 
 		return nil, nil
 	}
