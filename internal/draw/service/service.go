@@ -22,6 +22,7 @@ type Repository interface {
 	ListCompletedDraw(ctx context.Context) ([]models.DrawStore, error)              // Получение списка успешно завершённых тиражей
 	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)             // Получение информации по тиражу
 	LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error)  // Получение списка билетов по идентификатору тиража
+	GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error) // Получение тиража по идентификатору билета
 }
 
 // LotteryService реализует интерфейс сервиса лотереи.

@@ -27,10 +27,10 @@ func (s *paymentService) RegisterCustomInvoice(ctx context.Context, drawId int, 
 		return -1, errors.Errorf("failed to reserve ticket %d: %w", ticket.Id, err)
 	}
 
-	var invoice models.Invoice
+	var invoice models.InvoiceStore
 
 	invoice.RegisterTime = time.Now()
-	invoice.Status = "pending"
+	invoice.StatusId = 1
 	invoice.TicketID = ticket.Id
 
 	invoiceId, err = s.repo.CreateInvoice(ctx, invoice)

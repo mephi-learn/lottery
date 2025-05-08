@@ -17,7 +17,12 @@ func (s *paymentService) RegisterPayment(ctx context.Context, req *models.Paymen
 		return errors.Errorf("failed to recieve invoice info: %w", err)
 	}
 
-	if invoice.Amount > req.Price {
+	// Изменил проверку наличия средств (так как пользователям был добавлен кошелек, теперь проверяется доступная сумма на кошельке)
+	walletAmoint, err := s.repo.GetAmountInUserWallet(ctx)
+	if err != nil {
+		return errors.Errorf("failed getting amount on the user wallet: %w", err)
+	}
+	if invoice.Amount > walletAmoint {
 		return errors.New("not enough money")
 	}
 
@@ -25,7 +30,7 @@ func (s *paymentService) RegisterPayment(ctx context.Context, req *models.Paymen
 	req.TicketID = invoice.TicketID
 
 	// Обращаемся к платёжной системе
-	if err = paymentSystemMock(req); err != nil {
+	if err = s.paymentSystemMock(ctx, req, invoice.Amount); err != nil {
 		// Тут нужно вернуть деньги
 
 		return errors.Errorf("failed to pay invoice: %w", err)
@@ -43,7 +48,7 @@ func (s *paymentService) RegisterPayment(ctx context.Context, req *models.Paymen
 	return nil
 }
 
-func paymentSystemMock(req *models.PaymentRequest) error {
+func (s *paymentService) paymentSystemMock(ctx context.Context, req *models.PaymentRequest, amount float64) error {
 	if req.CVC == 123 {
 		return nil
 	}
@@ -55,6 +60,12 @@ func paymentSystemMock(req *models.PaymentRequest) error {
 	}
 
 	if int(nBig.Int64()) < 80 {
+		// Списание средств с кошелька пользователя
+		err = s.repo.DebitingFundsFromWallet(ctx, amount)
+		if err != nil {
+			return errors.Errorf("failed to debiting funds from wallet: %w", err)
+		}
+
 		return nil
 	}
 

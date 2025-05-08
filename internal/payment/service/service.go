@@ -9,8 +9,12 @@ import (
 
 // Repository реализует интерфейс репозитория сервиса покупки билетов.
 type Repository interface {
-	CreateInvoice(ctx context.Context, invoice models.Invoice) (invoiceId int, err error) // - Обработчки бд
-	GetInvoice(ctx context.Context, invoiceId int) (*models.Invoice, error)
+	CreateInvoice(ctx context.Context, invoice models.InvoiceStore) (invoiceId int, err error) // Создание инвойса
+	GetInvoice(ctx context.Context, invoiceId int) (*models.InvoiceStore, error)               // Получние инвойса по идентификатору
+	GetInvoiceByTicketId(ctx context.Context, ticketId int) (*models.InvoiceStore, error)      // Получение инвойса по идентификатору билета
+
+	DebitingFundsFromWallet(ctx context.Context, invoice float64) error // Списание средств с кошелька пользователя
+	GetAmountInUserWallet(ctx context.Context) (float64, error)         // Получение суммы на кошельке пользователя
 }
 
 // TicketService реализует интерфейс сервиса лотереи.
@@ -20,6 +24,11 @@ type TicketService interface {
 	ReserveTicket(ctx context.Context, ticketId int, userId int) error
 	BoughtTicket(ctx context.Context, ticketId int) error
 	CancelTicket(ctx context.Context, ticketId int) error
+	GetTicketById(ctx context.Context, ticketId int) (*models.Ticket, error)
+}
+
+type DrawService interface {
+	GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error)
 }
 
 type PaymentOption func(*paymentService) error
@@ -28,6 +37,7 @@ type paymentService struct {
 	repo Repository
 
 	ticket TicketService
+	draw   DrawService
 
 	log log.Logger
 }
@@ -48,6 +58,10 @@ func NewPaymentService(opts ...PaymentOption) (*paymentService, error) {
 		return nil, errors.Errorf("no ticket provided")
 	}
 
+	if svc.draw == nil {
+		return nil, errors.Errorf("no draw provided")
+	}
+
 	return &svc, nil
 }
 
@@ -65,9 +79,16 @@ func WithPaymentRepository(repo Repository) PaymentOption {
 	}
 }
 
-func WithTicketService(draw TicketService) PaymentOption {
+func WithTicketService(ticket TicketService) PaymentOption {
 	return func(r *paymentService) error {
-		r.ticket = draw
+		r.ticket = ticket
+		return nil
+	}
+}
+
+func WithDrawService(draw DrawService) PaymentOption {
+	return func(r *paymentService) error {
+		r.draw = draw
 		return nil
 	}
 }

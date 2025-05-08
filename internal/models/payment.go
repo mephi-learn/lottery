@@ -14,6 +14,16 @@ type Invoice struct {
 	Amount       float64   `json:"amount"`
 }
 
+// InvoiceStore представляет структуру инвойта для оплаты билета, взятую из базы данных.
+type InvoiceStore struct {
+	ID           int       `json:"id"`
+	RegisterTime time.Time `json:"register_time"`
+	StatusId     int       `json:"status_id"` // Например, "pending", "paid", "failed"
+	UserID       string    `json:"user_id"`   // ID пользователя, к которому относится инвойс, хз надо или не надо.
+	TicketID     int       `json:"ticket_id"`
+	Amount       float64   `json:"amount"`
+}
+
 // Payment представляет информацию о платеже.
 type Payment struct {
 	ID          string    `json:"id"`
