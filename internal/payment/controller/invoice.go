@@ -7,7 +7,8 @@ import (
 	"strconv"
 )
 
-type response struct {
+// ResponseInvoice Структура ответа при успешном создании инвойса
+type ResponseInvoice struct {
 	Message   string `json:"message"`
 	InvoiceId int    `json:"invoice_id"`
 }
@@ -26,7 +27,7 @@ func (h *handler) RegisterInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := response{
+	resp := ResponseInvoice{
 		Message:   "invoice has been created",
 		InvoiceId: invoiceId,
 	}

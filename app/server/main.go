@@ -175,6 +175,7 @@ func main() {
 		paymentservice.WithPaymentLogger(paymentLog.WithGroup("service")),
 		paymentservice.WithPaymentRepository(paymentRepo),
 		paymentservice.WithTicketService(ticketService),
+		paymentservice.WithDrawService(drawService),
 	))
 
 	// Инициализация контроллера Payment.

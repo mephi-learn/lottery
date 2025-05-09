@@ -31,7 +31,7 @@ func (h *handler) RegisterCustomInvoice(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	resp := response{
+	resp := ResponseInvoice{
 		Message:   "invoice has been created",
 		InvoiceId: invoiceId,
 	}
