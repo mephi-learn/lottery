@@ -23,17 +23,6 @@ func (h *handler) GetDrawWinResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-
-	//comb, err := json.Marshal(combination)
-	//if err != nil {
-	//	http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
-	//	return
-	//}
-	//_, _ = w.Write(comb)
-	//_, _ = w.Write([]byte{'\n', '\n'})
-
 	stats, err := json.Marshal(list.Statistic)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
@@ -47,5 +36,9 @@ func (h *handler) GetDrawWinResults(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
 	_, err = w.Write(out)
 }

@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"homework/internal/helpers"
 	"homework/internal/models"
 	"net/http"
 )
@@ -22,6 +23,11 @@ func (h *handler) CreateDraw(w http.ResponseWriter, r *http.Request) {
 		h.log.ErrorContext(ctx, "invalid draw id", "id", r.PathValue("draw_id"), "error", err)
 		http.Error(w, fmt.Sprintf("failed decore request: %s", err.Error()), http.StatusBadRequest)
 
+		return
+	}
+
+	if draw.Cost <= 0 {
+		helpers.ErrorMessage(w, "incorrect cost", http.StatusBadRequest, nil)
 		return
 	}
 

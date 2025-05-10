@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"homework/internal/auth"
 	"homework/internal/models"
 	"homework/pkg/errors"
 	"homework/pkg/log"
@@ -45,6 +46,7 @@ func WithService(svc authService) HandlerOption {
 type authService interface {
 	SignUp(ctx context.Context, userData *models.SignUpInput) (userId int, err error)         // Регистрация пользователя.
 	SignIn(ctx context.Context, userData *models.SignInInput) (signedToken string, err error) // Аутентификация пользователя.
+	List(ctx context.Context) ([]*models.User, error)                                         // Список пользователей.
 }
 
 type RouteOption func(*handler)
@@ -52,4 +54,5 @@ type RouteOption func(*handler)
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/auth/sign-up", h.signUp)
 	mux.HandleFunc("POST /api/auth/sign-in", h.signIn)
+	mux.HandleFunc("GET /api/admin/auth/list", auth.AuthenticatedAdmin(h.list))
 }

@@ -24,7 +24,7 @@ func (s *drawService) LotteryByType(lotteryType string) (models.Lottery, error) 
 	return s.lottery.LotteryByType(lotteryType)
 }
 
-// Получение тиража по идентификатору билета
+// GetDrawByTicketId получение тиража по идентификатору билета
 func (s *drawService) GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error) {
 	return s.repo.GetDrawByTicketId(ctx, ticketId)
 }

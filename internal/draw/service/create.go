@@ -29,6 +29,7 @@ func (s *drawService) CreateDraw(ctx context.Context, draw *models.DrawInput) (i
 	drawQuery := &models.DrawStore{
 		StatusId:    int(status),
 		LotteryType: lottery.Type(),
+		Cost:        draw.Cost,
 		SaleDate:    draw.SaleDate,
 		StartDate:   draw.StartDate,
 	}

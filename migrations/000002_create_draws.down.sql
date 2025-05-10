@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS draw_statuses;
+DROP TABLE IF EXISTS draws;

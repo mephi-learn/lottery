@@ -20,6 +20,7 @@ import (
 	resultservice "homework/internal/result/service"
 	"homework/internal/server"
 	"homework/internal/storage"
+	"homework/pkg/errors"
 	"homework/pkg/log"
 	"os"
 	"os/signal"
@@ -31,7 +32,33 @@ import (
 	ticketcontroller "homework/internal/ticket/controller"
 	ticketrepository "homework/internal/ticket/repository"
 	ticketservice "homework/internal/ticket/service"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
+
+func runMigrations(dsn string, log log.Logger) {
+	m, err := migrate.New("file://migrations", dsn)
+	if err != nil {
+		log.Error("migration error", "error", err)
+		os.Exit(1)
+	}
+
+	err = m.Up()
+
+	switch {
+	case errors.Is(err, migrate.ErrNoChange):
+		log.Info("migration not needed, schema in actual state")
+		return
+
+	case err != nil:
+		log.Error("migration failed", "error", err)
+		os.Exit(1)
+	}
+
+	log.Info("migration success")
+}
 
 func main() {
 	configPath := flag.String("config", "", "configuration file. Can be YAML or JSON file")
@@ -39,12 +66,16 @@ func main() {
 
 	// Загрузка конфига.
 	cfg := start(config.NewConfigFromFile(*configPath))
+	cfg = config.EnvEnrichment(cfg)
 
 	logger := start(log.New(cfg.Logger))
 
 	// Менеджер сервисов.
 	ctx := context.Background()
 	manager := NewManager(&ctx, logger)
+
+	dsn := storage.BuildDSN(&cfg.Storage.Postgres)
+	runMigrations(dsn, logger)
 
 	logger.Info("server starting", "build", manager.build)
 	defer logger.Info("server stopped")

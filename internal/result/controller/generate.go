@@ -3,23 +3,11 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	"homework/internal/models"
 	"net/http"
 	"strconv"
 )
 
 func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
-	user, err := models.UserFromContext(r.Context())
-	if err != nil {
-		http.Error(w, "authentication needed", http.StatusBadRequest)
-		return
-	}
-
-	if !user.Admin {
-		http.Error(w, "permission denied, admin only", http.StatusForbidden)
-		return
-	}
-
 	// Парсим входные данные
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {

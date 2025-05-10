@@ -28,6 +28,7 @@ type TicketService interface {
 }
 
 type DrawService interface {
+	GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error)
 	GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error)
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 // CreateInvoice Создание инвойса.
-func (r *repository) CreateInvoice(ctx context.Context, invoice models.Invoice) (int, error) {
+func (r *repository) CreateInvoice(ctx context.Context, invoice models.InvoiceStore) (int, error) {
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
 		return -1, errors.Errorf("authentificate need: %w", err)
@@ -39,7 +39,7 @@ func (r *repository) GetInvoice(ctx context.Context, invoiceId int) (*models.Inv
 func (r *repository) GetInvoiceByTicketId(ctx context.Context, ticketId int) (*models.InvoiceStore, error) {
 	invoice := models.InvoiceStore{}
 
-	if err := r.db.QueryRowContext(ctx, "select id, user_id, ticket_id, status_id, date_invoice, price from invoices where ticket_id = $1", ticketId).
+	if err := r.db.QueryRowContext(ctx, "select id, user_id, ticket_id, status_id, date_invoice, price from invoices where ticket_id = $1 and status_id = 1", ticketId).
 		Scan(&invoice.ID, &invoice.UserID, &invoice.TicketID, &invoice.StatusId, &invoice.RegisterTime, &invoice.Amount); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

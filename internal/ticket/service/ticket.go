@@ -41,7 +41,7 @@ func (s *ticketService) CreateTickets(ctx context.Context, drawId int, num int) 
 	}
 
 	// Генерируем необходимое количество билетов
-	tickets, err := lottery.CreateTickets(drawId, num)
+	tickets, err := lottery.CreateTickets(drawId, draw.Cost, num)
 	if err != nil {
 		s.log.ErrorContext(ctx, "failed to create new tickets in lottery", "error", err)
 		return nil, errors.Errorf("failed to create new tickets in lottery: %w", err)
@@ -152,6 +152,7 @@ func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, co
 	ticket.Status = models.TicketStatusReady
 	ticket.UserId = user.ID
 	ticket.LockTime = time.Now().Add(ticketLockTime * time.Minute)
+	ticket.Cost = draw.Cost
 
 	if err = s.repo.StoreTicket(ctx, ticket); err != nil {
 		return nil, errors.Errorf("failed store ticket: %w", err)

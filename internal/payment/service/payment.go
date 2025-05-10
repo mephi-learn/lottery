@@ -17,11 +17,11 @@ func (s *paymentService) RegisterPayment(ctx context.Context, req *models.Paymen
 	}
 
 	// Изменил проверку наличия средств (так как пользователям был добавлен кошелек, теперь проверяется доступная сумма на кошельке)
-	walletAmoint, err := s.repo.GetAmountInUserWallet(ctx)
+	walletAmount, err := s.repo.GetAmountInUserWallet(ctx)
 	if err != nil {
 		return errors.Errorf("failed getting amount on the user wallet: %w", err)
 	}
-	if invoice.Amount > walletAmoint {
+	if invoice.Amount > walletAmount {
 		return errors.New("not enough money")
 	}
 

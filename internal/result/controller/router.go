@@ -54,7 +54,7 @@ type resultService interface {
 type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
-	mux.Handle("POST /api/results/{id}/generate", auth.Authenticated(h.Drawing))                      // Проведение тиража
+	mux.Handle("POST /api/results/{id}/generate", auth.AuthenticatedAdmin(h.Drawing))                 // Проведение тиража
 	mux.Handle("GET /api/results/{draw_id}", http.HandlerFunc(h.GetDrawResults))                      // Отображение выигрышной комбинации тиража
 	mux.Handle("GET /api/results/tickets/{ticket_id}/check", auth.Authenticated(h.CheckTicketResult)) // был /api/tickets/{id}/check-result
 	mux.Handle("GET /api/results/tickets", auth.Authenticated(h.CheckTicketsResult))                  // Возвращает статистику по всем билетам текущего пользователя

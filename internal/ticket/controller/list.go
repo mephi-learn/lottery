@@ -9,11 +9,12 @@ import (
 )
 
 type responseTicket struct {
-	Id          int    `json:"id"`
-	StatusName  string `json:"status_name"`
-	DrawId      int    `json:"draw_id"`
-	UserId      int    `json:"user_id"`
-	Combination []int  `json:"combination"`
+	Id          int     `json:"id"`
+	StatusName  string  `json:"status_name"`
+	DrawId      int     `json:"draw_id"`
+	UserId      int     `json:"user_id"`
+	Combination []int   `json:"combination"`
+	Cost        float64 `json:"cost"`
 }
 
 type listAvailableTicketsResponse struct {
@@ -48,6 +49,7 @@ func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
 				DrawId:      t.DrawId,
 				UserId:      t.UserId,
 				Combination: ticketCombination,
+				Cost:        t.Cost,
 			})
 		}
 	}

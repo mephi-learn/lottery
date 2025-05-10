@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 var ErrUnknownFormat = errors.New("unknown file format")
@@ -60,4 +61,28 @@ func NewConfigFromFile(filename string) (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+// EnvEnrichment обогащает конфигурацию данными из переменных окружения.
+func EnvEnrichment(config *Config) *Config {
+	config.Storage.Postgres.Host = getEnv("DB_HOST", config.Storage.Postgres.Host)
+	if port, err := strconv.Atoi(getEnv("DB_PORT", strconv.Itoa(config.Storage.Postgres.Port))); err == nil {
+		config.Storage.Postgres.Port = port
+	}
+	config.Storage.Postgres.User = getEnv("DB_USER", config.Storage.Postgres.User)
+	config.Storage.Postgres.Password = getEnv("DB_PASSWORD", config.Storage.Postgres.Password)
+	config.Storage.Postgres.Database = getEnv("DB_NAME", config.Storage.Postgres.Database)
+	config.Storage.Postgres.Schema = getEnv("DB_SCHEMA", config.Storage.Postgres.Schema)
+	config.Storage.Postgres.SSLMode = getEnv("DB_SSL_MODE", config.Storage.Postgres.SSLMode)
+
+	return config
+}
+
+// getEnv получает значение переменной окружения.
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+
+	return defaultValue
 }

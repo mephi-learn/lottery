@@ -53,7 +53,7 @@ func (s *paymentService) RegisterInvoice(ctx context.Context, ticketId int) (inv
 	invoice.RegisterTime = time.Now()
 	invoice.StatusId = 1
 	invoice.TicketID = ticketId
-	invoice.Amount = draw.Cost
+	invoice.Amount = ticket.Cost
 
 	// Создание инвойса
 	invoiceId, err = s.repo.CreateInvoice(ctx, invoice)

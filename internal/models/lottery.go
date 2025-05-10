@@ -18,7 +18,7 @@ type Lottery interface {
 	Create() Lottery                                                         // Создать новый экземпляр лотереи
 	AddTickets([]*Ticket) error                                              // Добавить билеты в лотерею
 	AddTicketWithCombination(drawId int, combination []int) (*Ticket, error) // Создать билет с указанными номерами и добавить его в лотерею
-	CreateTickets(drawId int, num int) ([]*Ticket, error)                    // Создать новые билеты с уникальными номерами и добавить их в лотерею
+	CreateTickets(drawId int, cost float64, num int) ([]*Ticket, error)      // Создать новые билеты с уникальными номерами и добавить их в лотерею
 	Drawing(combination []int) (map[string][]*Ticket, error)                 // Провести розыгрыш (отсортировать билеты по выигрышным комбинациям)
 	GenerateWinningCombination() ([]int, error)                              // Сгенерировать выигрышную комбинацию, но не применять её
 }
@@ -38,6 +38,7 @@ type lotteryTicket struct {
 	Status      TicketStatus
 	DrawId      int
 	Combination []int
+	Cost        float64
 }
 
 type lottery struct {
@@ -106,7 +107,7 @@ func (l *lottery) AddTicketWithCombination(drawId int, combination []int) (*Tick
 }
 
 // CreateTickets создаёт указанное количество билетов, гарантируя уникальность комбинаций.
-func (l *lottery) CreateTickets(drawId int, num int) ([]*Ticket, error) {
+func (l *lottery) CreateTickets(drawId int, cost float64, num int) ([]*Ticket, error) {
 	newTickets := make([]*lotteryTicket, 0, num)
 	maxDigitIndex := big.NewInt(int64(l.maxAllowDigit) - 1)
 	for range num {
@@ -123,7 +124,7 @@ func (l *lottery) CreateTickets(drawId int, num int) ([]*Ticket, error) {
 			}
 		}
 		sort.Ints(combination)
-		ticket := &lotteryTicket{Status: TicketStatusReady, DrawId: drawId, Combination: combination}
+		ticket := &lotteryTicket{Status: TicketStatusReady, DrawId: drawId, Combination: combination, Cost: cost}
 		l.addTicket(ticket)
 		newTickets = append(newTickets, ticket)
 	}
@@ -210,6 +211,7 @@ func (l *lottery) fromTicket(rawTicket *Ticket) (*lotteryTicket, error) {
 		Status:      rawTicket.Status,
 		DrawId:      rawTicket.DrawId,
 		Combination: numbers,
+		Cost:        rawTicket.Cost,
 	}, nil
 }
 
@@ -226,6 +228,7 @@ func (l *lottery) toTicket(rawTicket *lotteryTicket) *Ticket {
 		Status: rawTicket.Status,
 		DrawId: rawTicket.DrawId,
 		Data:   base64.StdEncoding.EncodeToString([]byte(combination)),
+		Cost:   rawTicket.Cost,
 	}
 }
 
