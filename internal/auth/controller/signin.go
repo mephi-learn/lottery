@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"homework/internal/helpers"
 	"homework/internal/models"
 	"net/http"
 )
@@ -11,19 +12,15 @@ func (h *handler) signIn(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&signIn)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		helpers.ErrorMessage(w, "invalid json data", http.StatusBadRequest, err)
 		return
 	}
 
 	signedToken, err := h.service.SignIn(r.Context(), &signIn)
 	if err != nil {
-		http.Error(w, "user was not found", http.StatusBadRequest)
+		helpers.ErrorMessage(w, "user was not found", http.StatusBadRequest, nil)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(`
-{
-	"token": "` + signedToken + `"
-}`))
+	helpers.SuccessMessage(w, "token create", map[string]any{"token": signedToken})
 }

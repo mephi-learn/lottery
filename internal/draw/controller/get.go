@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
+	"homework/internal/helpers"
 	"homework/internal/models"
 	"net/http"
 	"strconv"
@@ -16,7 +16,7 @@ func (h *handler) GetDraw(w http.ResponseWriter, r *http.Request) {
 	drawId, err := strconv.Atoi(r.PathValue("draw_id"))
 	if err != nil {
 		h.log.ErrorContext(ctx, "invalid draw id", "id", r.PathValue("draw_id"), "error", err)
-		http.Error(w, fmt.Sprintf("invalid id: %s", r.PathValue("draw_id")), http.StatusBadRequest)
+		helpers.ErrorMessage(w, fmt.Sprintf("invalid draw id: %s", r.PathValue("draw_id")), http.StatusBadRequest, err)
 
 		return
 	}
@@ -25,7 +25,7 @@ func (h *handler) GetDraw(w http.ResponseWriter, r *http.Request) {
 	draw, err := h.service.GetDraw(ctx, drawId)
 	if err != nil {
 		h.log.ErrorContext(ctx, "failed to get draw", "error", err)
-		http.Error(w, fmt.Sprintf("error on get draw: %s", err.Error()), http.StatusBadRequest)
+		helpers.ErrorMessage(w, "failed to get draw", http.StatusBadRequest, err)
 
 		return
 	}
@@ -34,12 +34,12 @@ func (h *handler) GetDraw(w http.ResponseWriter, r *http.Request) {
 	lottery, err := h.service.LotteryByType(draw.LotteryType)
 	if err != nil {
 		h.log.ErrorContext(ctx, "failed to detect lottery", "error", err)
-		http.Error(w, fmt.Sprintf("lottery unknown type: %s", err.Error()), http.StatusBadRequest)
+		helpers.ErrorMessage(w, "lottery unknown type", http.StatusBadRequest, err)
 
 		return
 	}
 
-	// В случае успеха, подготавливаем ответ
+	// В случае успеха, подготавливаем и выдаём ответ
 	status := models.DrawStatus(draw.StatusId)
 	drawOut := models.DrawOutput{
 		Id:        draw.Id,
@@ -48,16 +48,6 @@ func (h *handler) GetDraw(w http.ResponseWriter, r *http.Request) {
 		SaleDate:  draw.SaleDate,
 		StartDate: draw.StartDate,
 	}
-	result, err := json.Marshal(drawOut)
-	if err != nil {
-		h.log.ErrorContext(ctx, "failed to encode json response", "error", err)
-		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
 
-		return
-	}
-
-	// И возвращаем его
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(result)
+	helpers.SuccessMessage(w, "draw", drawOut)
 }

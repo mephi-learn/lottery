@@ -1,26 +1,16 @@
 package controller
 
 import (
-	"encoding/json"
+	"homework/internal/helpers"
 	"net/http"
 )
 
 func (h *handler) ExportDraws(w http.ResponseWriter, r *http.Request) {
 	draws, err := h.service.ExportDraws(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.ErrorMessage(w, "export error", http.StatusBadRequest, err)
 		return
 	}
 
-	data, err := json.Marshal(draws)
-	if err != nil {
-		h.log.Error("failed to marshal response", "err", err)
-		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
-
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
+	helpers.SuccessMessage(w, "data", draws)
 }

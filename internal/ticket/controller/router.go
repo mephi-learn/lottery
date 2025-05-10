@@ -55,7 +55,7 @@ type RouteOption func(*handler)
 
 func (h *handler) WithRouter(mux *http.ServeMux) {
 	// админ создает множество билетов
-	mux.Handle("POST /api/admin/tickets/draws/{drawId}/generate/{num}", auth.Authenticated(h.CreateTickets))
+	mux.Handle("POST /api/admin/tickets/draws/{draw_id}/generate/{count}", auth.AuthenticatedAdmin(h.CreateTickets))
 
 	// USER получает информацию по билету
 	mux.Handle("GET /api/tickets/{ticket_id}", auth.Authenticated(h.GetTicketById))

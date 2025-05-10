@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
+	"homework/internal/helpers"
 	"net/http"
 	"strconv"
 )
@@ -11,30 +11,17 @@ func (h *handler) Drawing(w http.ResponseWriter, r *http.Request) {
 	// Парсим входные данные
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid id: %s", r.PathValue("id")), http.StatusBadRequest)
+		helpers.ErrorMessage(w, fmt.Sprintf("invalid id: %s", r.PathValue("id")), http.StatusBadRequest, err)
 		return
 	}
 
 	result, err := h.service.Drawing(r.Context(), id)
 	if err != nil {
 		h.log.Error("failed to generate draw results", "err", err)
-		http.Error(w, fmt.Sprintf("failed to get draw results: %s", err.Error()), http.StatusInternalServerError)
+		helpers.ErrorMessage(w, "failed to get draw results", http.StatusBadRequest, err)
 
 		return
 	}
 
-	responsePayload := map[string]interface{}{
-		"result": result,
-	}
-	data, err := json.Marshal(responsePayload)
-	if err != nil {
-		h.log.Error("failed to marshal response", "err", err)
-		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
-
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
+	helpers.SuccessMessage(w, "result", result)
 }

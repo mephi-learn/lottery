@@ -1,53 +1,30 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
-	"homework/internal/models"
+	"homework/internal/helpers"
 	"net/http"
 	"strconv"
 )
 
-type getCreateTicketsResponse struct {
-	Message string `json:"message"`
-}
-
 func (h *handler) CreateTickets(w http.ResponseWriter, r *http.Request) {
-	user, err := models.UserFromContext(r.Context())
+	drawId, err := strconv.Atoi(r.PathValue("draw_id"))
 	if err != nil {
-		http.Error(w, "authenticate need", http.StatusBadRequest)
+		helpers.ErrorMessage(w, fmt.Sprintf("invalid draw id: %s", r.PathValue("draw_id")), http.StatusBadRequest, err)
 		return
 	}
 
-	if !user.Admin {
-		http.Error(w, "permission denied, admin only area", http.StatusForbidden)
-		return
-	}
-
-	drawId, err := strconv.Atoi(r.PathValue("drawId"))
+	num, err := strconv.Atoi(r.PathValue("count"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("drawId")), http.StatusBadRequest)
-		return
-	}
-
-	num, err := strconv.Atoi(r.PathValue("num"))
-	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid num: %s", r.PathValue("num")), http.StatusBadRequest)
+		helpers.ErrorMessage(w, fmt.Sprintf("invalid count: %s", r.PathValue("count")), http.StatusBadRequest, err)
 		return
 	}
 
 	list, err := h.service.CreateTickets(r.Context(), drawId, num)
-
-	resp := getCreateTicketsResponse{
-		Message: fmt.Sprintf("created %d tickets", len(list)),
-	}
-
-	result, err := json.Marshal(resp)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
+		helpers.ErrorMessage(w, "failed create tickets", http.StatusBadRequest, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(result)
+	helpers.SuccessMessageWithCode(w, "tickets created", list, http.StatusCreated)
 }

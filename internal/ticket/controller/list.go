@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
+	"homework/internal/helpers"
 	"homework/internal/models"
 	"net/http"
 	"strconv"
@@ -24,13 +24,13 @@ type listAvailableTicketsResponse struct {
 func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
 	drawId, err := strconv.Atoi(r.PathValue("draw_id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid draw: %s", r.PathValue("draw_id")), http.StatusBadRequest)
+		helpers.ErrorMessage(w, fmt.Sprintf("invalid draw id: %s", r.PathValue("draw_id")), http.StatusBadRequest, err)
 		return
 	}
 
 	tickets, err := h.service.ListAvailableTicketsByDrawId(r.Context(), drawId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed get ticket: %s", err.Error()), http.StatusInternalServerError)
+		helpers.ErrorMessage(w, "failed to get ticket", http.StatusBadRequest, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
 		if t != nil {
 			ticketCombination, err := models.ParseTicketCombination(t.Data)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("failed get ticket combination: %s", err.Error()), http.StatusInternalServerError)
+				helpers.ErrorMessage(w, "failed get ticket combination", http.StatusBadRequest, err)
 				return
 			}
 
@@ -54,16 +54,5 @@ func (h *handler) ListAvailableTickets(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response := listAvailableTicketsResponse{
-		Tickets: ticketsVal,
-	}
-
-	out, err := json.Marshal(response)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("failed create response: %s", err.Error()), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(out))
+	helpers.SuccessMessage(w, "tickets", ticketsVal)
 }
