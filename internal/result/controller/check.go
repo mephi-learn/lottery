@@ -23,10 +23,10 @@ func (h *handler) CheckTicketResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := h.service.CheckTicketResult(r.Context(), ticketId, user.ID)
-
 	if err != nil {
 		h.log.Error("failed to check ticket result", "err", err)
 		http.Error(w, fmt.Sprintf("failed to check ticket result: %s", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -39,6 +39,7 @@ func (h *handler) CheckTicketResult(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("failed to marshal response", "err", err)
 		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -55,10 +56,10 @@ func (h *handler) CheckTicketsResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := h.service.CheckTicketsResult(r.Context(), user.ID)
-
 	if err != nil {
 		h.log.Error("failed to check user tickets", "err", err)
 		http.Error(w, fmt.Sprintf("failed to check user tickets result: %s", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -69,6 +70,7 @@ func (h *handler) CheckTicketsResult(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("failed to marshal response", "err", err)
 		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+
 		return
 	}
 

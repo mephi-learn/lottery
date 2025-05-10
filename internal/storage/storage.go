@@ -17,6 +17,7 @@ type Config struct {
 	User     string `yaml:"user"     json:"user"`
 	Password string `yaml:"password" json:"password"`
 	Database string `yaml:"database" json:"database"`
+	SSLMode  string `yaml:"ssl_mode" json:"ssl_mode"`
 	Schema   string `yaml:"schema"   json:"schema"`
 }
 
@@ -52,14 +53,10 @@ func NewStorage(opts ...Option) (*storage, error) {
 		return nil, errors.Errorf("no logger provided")
 	}
 
+	dsn := connectString(st.postgres.Config)
+
 	var err error
-	config := st.postgres.Config
-	schema := ""
-	if config.Schema != "" {
-		schema = "search_path=" + config.Schema
-	}
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s %s sslmode=disable", config.Host, config.Port, config.User, config.Password, config.Database, schema)
-	st.postgres.DB, err = sql.Open("postgres", psqlInfo)
+	st.postgres.DB, err = sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, errors.Errorf("unable create storage: %w", err)
 	}
@@ -70,6 +67,24 @@ func NewStorage(opts ...Option) (*storage, error) {
 	}
 
 	return &st, nil
+}
+
+func connectString(cfg *Config) string {
+	schema := ""
+	if cfg.Schema != "" {
+		schema = "search_path=" + cfg.Schema + ",public"
+	}
+
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s %s sslmode=disable", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, schema)
+}
+
+func BuildDSN(cfg *Config) string {
+	schema := "public"
+	if cfg.Schema != "" {
+		schema = "search_path=" + cfg.Schema + ",public"
+	}
+
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?search_path=%s&sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, schema, cfg.SSLMode)
 }
 
 func WithLogger(logger log.Logger) Option {

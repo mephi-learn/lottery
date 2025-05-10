@@ -14,23 +14,51 @@ import (
 	exportcontroller "homework/internal/export/controller"
 	exportservice "homework/internal/export/service"
 	lotteryservice "homework/internal/lottery/service"
+	"homework/internal/models"
 	resultcontroller "homework/internal/result/controller"
 	resultrepository "homework/internal/result/repository"
 	resultservice "homework/internal/result/service"
-
-	"homework/internal/models"
-	paymentcontroller "homework/internal/payment/controller"
-	paymentrepository "homework/internal/payment/repository"
-	paymentservice "homework/internal/payment/service"
 	"homework/internal/server"
 	"homework/internal/storage"
-	ticketcontroller "homework/internal/ticket/controller"
-	ticketrepository "homework/internal/ticket/repository"
-	ticketservice "homework/internal/ticket/service"
+	"homework/pkg/errors"
 	"homework/pkg/log"
 	"os"
 	"os/signal"
+
+	paymentcontroller "homework/internal/payment/controller"
+	paymentrepository "homework/internal/payment/repository"
+	paymentservice "homework/internal/payment/service"
+
+	ticketcontroller "homework/internal/ticket/controller"
+	ticketrepository "homework/internal/ticket/repository"
+	ticketservice "homework/internal/ticket/service"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
+
+func runMigrations(dsn string, log log.Logger) {
+	m, err := migrate.New("file://migrations", dsn)
+	if err != nil {
+		log.Error("migration error", "error", err)
+		os.Exit(1)
+	}
+
+	err = m.Up()
+
+	switch {
+	case errors.Is(err, migrate.ErrNoChange):
+		log.Info("migration not needed, schema in actual state")
+		return
+
+	case err != nil:
+		log.Error("migration failed", "error", err)
+		os.Exit(1)
+	}
+
+	log.Info("migration success")
+}
 
 func main() {
 	configPath := flag.String("config", "", "configuration file. Can be YAML or JSON file")
@@ -38,12 +66,16 @@ func main() {
 
 	// Загрузка конфига.
 	cfg := start(config.NewConfigFromFile(*configPath))
+	cfg = config.EnvEnrichment(cfg)
 
 	logger := start(log.New(cfg.Logger))
 
 	// Менеджер сервисов.
 	ctx := context.Background()
 	manager := NewManager(&ctx, logger)
+
+	dsn := storage.BuildDSN(&cfg.Storage.Postgres)
+	runMigrations(dsn, logger)
 
 	logger.Info("server starting", "build", manager.build)
 	defer logger.Info("server stopped")
@@ -87,10 +119,8 @@ func main() {
 		lotteryservice.WithLogger(lotteryLog.WithGroup("service")),
 	))
 
-	var lottery536 *models.Lottery536
-	lotteryService.RegisterLottery(lottery536)
-	var lottery645 *models.Lottery645
-	lotteryService.RegisterLottery(lottery645)
+	lotteryService.RegisterLottery(models.NewLottery5from36())
+	lotteryService.RegisterLottery(models.NewLottery6from45())
 
 	// Родительский логгер для подсистем внутри сервиса draw.
 	drawlog := serverlog.WithGroup("draw")

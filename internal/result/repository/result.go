@@ -2,14 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"homework/internal/models"
 	"homework/pkg/errors"
 
 	"github.com/lib/pq"
 )
 
-// get draw status and it's winning combination (if there is one already)
+// get draw status and it's winning combination (if there is one already).
 func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResultStore, error) {
 	var winCombination pq.Int64Array
 	drawRes := models.DrawResultStore{}
@@ -27,11 +26,7 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 		&drawRes.LotteryType,
 		&winCombination,
 	); err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to get draw info: %w", err)
-		}
-
-		return nil, nil
+		return nil, errors.Errorf("failed to get draw info: %w", err)
 	}
 
 	drawRes.WinCombination = make([]int, len(winCombination))
@@ -42,13 +37,13 @@ func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawResul
 	return &drawRes, nil
 }
 
-// GetCompletedDraws get draw status and it's winning combination (if there is one already)
+// GetCompletedDraws get draw status and it's winning combination (if there is one already).
 func (r *repository) GetCompletedDraws(ctx context.Context) ([]*models.DrawResultStore, error) {
 	var winCombination pq.Int64Array
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT
 		    r.id,
-			d.id,
+			d.id draw_id,
 			d.status_id,
 			d.lottery_type,
 			r.win_combination
@@ -85,7 +80,6 @@ func (r *repository) SaveWinCombination(ctx context.Context, drawId int, winComb
 		INSERT INTO draw_results (draw_id, win_combination)
 		VALUES ($1, $2)
 	`, drawId, pq.Array(winCombination))
-
 	if err != nil {
 		return errors.Errorf("failed to save winning combination: %w", err)
 	}
@@ -103,9 +97,7 @@ func (r *repository) GetUserTicket(ctx context.Context, ticketId, userId int) (*
 		&ticket.Data,
 		&ticket.UserId,
 	); err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to get ticket info: %w", err)
-		}
+		return nil, errors.Errorf("failed to get ticket info: %w", err)
 
 		return nil, nil
 	}

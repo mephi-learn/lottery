@@ -79,6 +79,7 @@ type Ticket struct {
 	DrawId   int          `json:"draw_id"`
 	UserId   int          `json:"user_id"`
 	Data     string       `json:"data"`
+	Cost     float64      `json:"cost"`
 	LockTime time.Time    `json:"lock_time"`
 }
 

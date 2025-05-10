@@ -6,13 +6,14 @@ import (
 	"homework/pkg/errors"
 )
 
-// helper function to convert pq.Int64Array to []int
+// helper function to convert pq.Int64Array to []int.
 func GetWinCombSlice(pqArray []int) []int {
 	winningNumbersInt := make([]int, len(pqArray))
 
 	for i, val64 := range pqArray {
 		winningNumbersInt[i] = int(val64)
 	}
+
 	return winningNumbersInt
 }
 
@@ -34,12 +35,12 @@ func countMatches(ticketNumbers []int, winningNumbers []int) int {
 			ticketSet[num] = struct{}{} // Mark as checked
 		}
 	}
+
 	return matchCount
 }
 
 func ProcessTicket(ctx context.Context, ticket *models.TicketStore, repo Repository) (*models.TicketResult, error) {
 	drawRes, err := repo.GetDraw(ctx, ticket.DrawId)
-
 	if err != nil {
 		return nil, errors.Errorf("failed to get draw: %w", err)
 	}
@@ -55,7 +56,6 @@ func ProcessTicket(ctx context.Context, ticket *models.TicketStore, repo Reposit
 	drawWinCombination := GetWinCombSlice(drawRes.WinCombination)
 
 	ticketCombination, err := models.ParseTicketCombination(ticket.Data)
-
 	if err != nil {
 		return nil, errors.Errorf("couldn't parse ticket info")
 	}

@@ -16,6 +16,7 @@ func (h *handler) ExportDraws(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("failed to marshal response", "err", err)
 		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+
 		return
 	}
 

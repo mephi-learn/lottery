@@ -54,6 +54,7 @@ type DrawInput struct {
 	Lottery   string    `json:"lottery"`
 	SaleDate  time.Time `json:"sale_date"`
 	StartDate time.Time `json:"start_date"`
+	Cost      float64   `json:"cost"`
 }
 
 type DrawOutput struct {
@@ -70,7 +71,7 @@ type DrawStore struct {
 	LotteryType string    `json:"lottery_type"`
 	SaleDate    time.Time `json:"sale_date"`
 	StartDate   time.Time `json:"start_date"`
-	Cost        float64   `json:"cost"` // Добавлено: стоимость тиража при оплате
+	Cost        float64   `json:"cost"`
 }
 
 type Draw struct {

@@ -10,8 +10,8 @@ import (
 
 func (r *repository) StoreTicket(ctx context.Context, ticket *models.Ticket) error {
 	var ticketId int
-	if err := r.db.QueryRowContext(ctx, "insert into tickets(status_id, draw_id, data, user_id, lock_time) values($1, $2, $3, $4, $5) returning id",
-		ticket.Status, ticket.DrawId, ticket.Data, ticket.UserId, ticket.LockTime).Scan(&ticketId); err != nil {
+	if err := r.db.QueryRowContext(ctx, "insert into tickets(status_id, draw_id, data, cost, user_id, lock_time) values($1, $2, $3, $4, $5, $6) returning id",
+		ticket.Status, ticket.DrawId, ticket.Data, ticket.Cost, ticket.UserId, ticket.LockTime).Scan(&ticketId); err != nil {
 		return errors.Errorf("failed to store ticket: %w", err)
 	}
 	ticket.Id = ticketId
@@ -30,8 +30,8 @@ func (r *repository) StoreTickets(ctx context.Context, tickets []*models.Ticket)
 
 	for _, ticket := range tickets {
 		var ticketId int
-		if err := tr.QueryRowContext(ctx, "insert into tickets(status_id, draw_id, data) values($1, $2, $3) returning id",
-			ticket.Status, ticket.DrawId, ticket.Data).Scan(&ticketId); err != nil {
+		if err := tr.QueryRowContext(ctx, "insert into tickets(status_id, draw_id, data, cost) values($1, $2, $3, $4) returning id",
+			ticket.Status, ticket.DrawId, ticket.Data, ticket.Cost).Scan(&ticketId); err != nil {
 			return errors.Errorf("failed to store ticket: %w", err)
 		}
 		ticket.Id = ticketId
@@ -41,7 +41,7 @@ func (r *repository) StoreTickets(ctx context.Context, tickets []*models.Ticket)
 }
 
 func (r *repository) LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT t.id, t.status_id, t.draw_id, data FROM tickets t INNER JOIN draws d ON t.draw_id = d.id WHERE t.draw_id = $1", drawId)
+	rows, err := r.db.QueryContext(ctx, "SELECT t.id, t.status_id, t.draw_id, data, t.cost FROM tickets t INNER JOIN draws d ON t.draw_id = d.id WHERE t.draw_id = $1", drawId)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (r *repository) LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*mo
 	var tickets []*models.Ticket
 	for rows.Next() {
 		var ticket models.Ticket
-		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data); err != nil {
+		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &ticket.Cost); err != nil {
 			return nil, err
 		}
 		tickets = append(tickets, &ticket)
@@ -64,7 +64,7 @@ func (r *repository) LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*mo
 func (r *repository) ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {
 	var userId sql.NullInt64
 	rows, err := r.db.QueryContext(ctx, `
-SELECT t.id, t.status_id, t.draw_id, data, user_id
+SELECT t.id, t.status_id, t.draw_id, data, t.cost, user_id
 FROM tickets t INNER JOIN draws d ON t.draw_id = d.id
 WHERE 1 = 1
     and d.status_id = $1
@@ -82,7 +82,7 @@ WHERE 1 = 1
 	var tickets []*models.Ticket
 	for rows.Next() {
 		var ticket models.Ticket
-		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &userId); err != nil {
+		if err = rows.Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &ticket.Cost, &userId); err != nil {
 			return nil, err
 		}
 		if userId.Valid {
@@ -119,7 +119,7 @@ func (r *repository) LoadTicketsByUserId(ctx context.Context, userId int) ([]*mo
 
 func (r *repository) GetTicketById(ctx context.Context, ticketId int) (*models.Ticket, error) {
 	ticket := models.Ticket{}
-	if err := r.db.QueryRowContext(ctx, "select id, status_id, draw_id, data from tickets where id = $1", ticketId).Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data); err != nil {
+	if err := r.db.QueryRowContext(ctx, "select id, status_id, draw_id, data, cost from tickets where id = $1", ticketId).Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &ticket.Cost); err != nil {
 		return nil, errors.Errorf("failed to get ticket: %w", err)
 	}
 
@@ -132,6 +132,7 @@ func (r *repository) MarkTicketAsBought(ctx context.Context, ticketId int) error
 	if err != nil {
 		return errors.Errorf("failed to update ticket status: %w", err)
 	}
+
 	return nil
 }
 
@@ -145,6 +146,7 @@ returning id`,
 	if err != nil {
 		return errors.Errorf("failed to reserve ticket: %w", err)
 	}
+
 	return nil
 }
 
@@ -154,6 +156,7 @@ func (r *repository) CancelTicket(ctx context.Context, ticketId int) error {
 	if err != nil {
 		return errors.Errorf("failed to cancel ticket: %w", err)
 	}
+
 	return nil
 }
 

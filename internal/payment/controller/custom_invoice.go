@@ -11,7 +11,7 @@ type Combination struct {
 	Combination []int `json:"combination"`
 }
 
-// RegisterCustomInvoice регистрация инвойса с билетом
+// RegisterCustomInvoice регистрация инвойса с билетом.
 func (h *handler) RegisterCustomInvoice(w http.ResponseWriter, r *http.Request) {
 	drawId, err := strconv.Atoi(r.PathValue("draw_id"))
 	if err != nil {

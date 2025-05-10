@@ -35,7 +35,7 @@ func (s *lotteryService) LotteryByType(lotteryType string) (models.Lottery, erro
 		return nil, errors.New("lottery not found")
 	}
 
-	return lottery, nil
+	return lottery.Create(), nil
 }
 
 func (s *lotteryService) LotteryByName(name string) (models.Lottery, error) {

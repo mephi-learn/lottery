@@ -28,12 +28,11 @@ func (s *ticketService) CreateTickets(ctx context.Context, drawId int, num int) 
 	}
 
 	// Создаём лотерею по её типу
-	lotteryType, err := s.lottery.LotteryByType(draw.LotteryType)
+	lottery, err := s.lottery.LotteryByType(draw.LotteryType)
 	if err != nil {
 		s.log.ErrorContext(ctx, "unknown lottery type", "error", err)
 		return nil, errors.Errorf("unknown lottery type: %w", err)
 	}
-	lottery := lotteryType.Create()
 
 	// Добавляем полученные билеты в лотерею
 	if err = lottery.AddTickets(ticketsIn); err != nil {
@@ -42,7 +41,7 @@ func (s *ticketService) CreateTickets(ctx context.Context, drawId int, num int) 
 	}
 
 	// Генерируем необходимое количество билетов
-	tickets, err := lottery.CreateTickets(drawId, num)
+	tickets, err := lottery.CreateTickets(drawId, draw.Cost, num)
 	if err != nil {
 		s.log.ErrorContext(ctx, "failed to create new tickets in lottery", "error", err)
 		return nil, errors.Errorf("failed to create new tickets in lottery: %w", err)
@@ -93,12 +92,11 @@ func (s *ticketService) AddTicket(ctx context.Context, ticket *models.Ticket) (*
 	}
 
 	// Создаём лотерею по её типу
-	lotteryType, err := s.lottery.LotteryByType(draw.LotteryType)
+	lottery, err := s.lottery.LotteryByType(draw.LotteryType)
 	if err != nil {
 		s.log.ErrorContext(ctx, "unknown lottery type", "error", err)
 		return nil, errors.Errorf("unknown lottery type: %w", err)
 	}
-	lottery := lotteryType.Create()
 
 	// Добавляем полученный билет в лотерею, проверяя его корректность его
 	if err = lottery.AddTickets([]*models.Ticket{ticket}); err != nil {
@@ -114,7 +112,7 @@ func (s *ticketService) AddTicket(ctx context.Context, ticket *models.Ticket) (*
 	return ticket, nil
 }
 
-// ListAvailableTicketsByDrawId выдаёт список допустимых билетов для покупки (конкретный тираж)
+// ListAvailableTicketsByDrawId выдаёт список допустимых билетов для покупки (конкретный тираж).
 func (s *ticketService) ListAvailableTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {
 	tickets, err := s.repo.ListAvailableTicketsByDrawId(ctx, drawId)
 	if err != nil {
@@ -124,8 +122,8 @@ func (s *ticketService) ListAvailableTicketsByDrawId(ctx context.Context, drawId
 	return tickets, nil
 }
 
-// CreateReservedTicket создаёт билет для лотереи из данных (номера, перечисленные через запятую) и сразу резервирует его
-func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, data string) (*models.Ticket, error) {
+// CreateReservedTicket создаёт билет для лотереи из данных (номера, перечисленные через запятую) и сразу резервирует его.
+func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, combination []int) (*models.Ticket, error) {
 	// Получаем аутентифицированного пользователя
 	user, err := models.UserFromContext(ctx)
 	if err != nil {
@@ -140,14 +138,13 @@ func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, da
 	}
 
 	// Создаём лотерею по её типу
-	lotteryType, err := s.lottery.LotteryByType(draw.LotteryType)
+	lottery, err := s.lottery.LotteryByType(draw.LotteryType)
 	if err != nil {
 		s.log.ErrorContext(ctx, "unknown lottery type", "error", err)
 		return nil, errors.Errorf("unknown lottery type: %w", err)
 	}
-	lottery := lotteryType.Create()
 
-	ticket, err := lottery.CreateTicket(drawId, data)
+	ticket, err := lottery.AddTicketWithCombination(drawId, combination)
 	if err != nil {
 		return nil, errors.Errorf("failed create ticket: %w", err)
 	}
@@ -155,6 +152,7 @@ func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, da
 	ticket.Status = models.TicketStatusReady
 	ticket.UserId = user.ID
 	ticket.LockTime = time.Now().Add(ticketLockTime * time.Minute)
+	ticket.Cost = draw.Cost
 
 	if err = s.repo.StoreTicket(ctx, ticket); err != nil {
 		return nil, errors.Errorf("failed store ticket: %w", err)
@@ -163,18 +161,18 @@ func (s *ticketService) CreateReservedTicket(ctx context.Context, drawId int, da
 	return ticket, nil
 }
 
-// ReserveTicket маркирует билет зарезервированным (выставляет время окончания в поле lock_time)
+// ReserveTicket маркирует билет зарезервированным (выставляет время окончания в поле lock_time).
 func (s *ticketService) ReserveTicket(ctx context.Context, ticketId int, userId int) error {
 	lockTime := time.Now().Add(ticketLockTime * time.Minute)
 	return s.repo.ReserveTicket(ctx, ticketId, userId, lockTime)
 }
 
-// BoughtTicket маркирует билет купленным (стирает время окончания в поле lock_time и меняет статус на КУПЛЕН)
+// BoughtTicket маркирует билет купленным (стирает время окончания в поле lock_time и меняет статус на КУПЛЕН).
 func (s *ticketService) BoughtTicket(ctx context.Context, ticketId int) error {
 	return s.repo.MarkTicketAsBought(ctx, ticketId)
 }
 
-// CancelTicket делает билет снова доступным для покупки (стирает время окончания в поле lock_time)
+// CancelTicket делает билет снова доступным для покупки (стирает время окончания в поле lock_time).
 func (s *ticketService) CancelTicket(ctx context.Context, ticketId int) error {
 	return s.repo.CancelTicket(ctx, ticketId)
 }
@@ -188,6 +186,7 @@ func (s *ticketService) StartExpiredTicketsCleaner(ctx context.Context) {
 			case <-ctx.Done():
 				ticker.Stop()
 				s.log.InfoContext(ctx, "expired tickets cleaner stopped")
+
 				return
 			case <-ticker.C:
 				s.log.InfoContext(ctx, "checking for expired tickets")

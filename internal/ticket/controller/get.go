@@ -44,6 +44,7 @@ func (h *handler) GetTicketById(w http.ResponseWriter, r *http.Request) {
 			DrawId:      ticket.DrawId,
 			UserId:      ticket.UserId,
 			Combination: ticketCombination,
+			Cost:        ticket.Cost,
 		},
 	}
 

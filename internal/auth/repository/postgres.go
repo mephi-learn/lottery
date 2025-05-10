@@ -99,3 +99,27 @@ func (r *repository) GetById(ctx context.Context, userId int) (*models.User, err
 
 	return &user, nil
 }
+
+func (r *repository) List(ctx context.Context) ([]*models.User, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id, name, username, email, admin FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var clients []*models.User
+	for rows.Next() {
+		var client models.User
+		if err = rows.Scan(&client.ID, &client.Name, &client.Username, &client.Email, &client.Admin); err != nil {
+			return clients, err
+		}
+		clients = append(clients, &client)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return clients, nil
+}

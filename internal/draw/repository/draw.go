@@ -19,8 +19,8 @@ func (r *repository) CreateDraw(ctx context.Context, draw *models.DrawStore) (in
 	}
 
 	var drawId int
-	if err := r.db.QueryRowContext(ctx, "insert into draws(status_id, lottery_type, sale_date, start_date) values($1, $2, $3, $4) returning id",
-		draw.StatusId, draw.LotteryType, draw.SaleDate, draw.StartDate).Scan(&drawId); err != nil {
+	if err := r.db.QueryRowContext(ctx, "insert into draws(status_id, lottery_type, cost, sale_date, start_date) values($1, $2, $3, $4, $5) returning id",
+		draw.StatusId, draw.LotteryType, draw.Cost, draw.SaleDate, draw.StartDate).Scan(&drawId); err != nil {
 		return -1, errors.Errorf("failed to create draw: %w", err)
 	}
 
@@ -29,12 +29,8 @@ func (r *repository) CreateDraw(ctx context.Context, draw *models.DrawStore) (in
 
 func (r *repository) GetDraw(ctx context.Context, drawId int) (*models.DrawStore, error) {
 	draw := models.DrawStore{}
-	if err := r.db.QueryRowContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = $1", drawId).Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to create draw: %w", err)
-		}
-
-		return nil, nil
+	if err := r.db.QueryRowContext(ctx, "SELECT id, status_id, lottery_type, cost, sale_date, start_date FROM draws WHERE id = $1", drawId).Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.Cost, &draw.SaleDate, &draw.StartDate); err != nil {
+		return nil, errors.Errorf("failed to get draw: %w", err)
 	}
 
 	return &draw, nil
@@ -157,7 +153,7 @@ func (r *repository) SetDrawStartDate(ctx context.Context, drawId int, start tim
 }
 
 func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE status_id in ($1, $2)", models.DrawStatusPlanned, models.DrawStatusActive)
+	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, cost, sale_date, start_date FROM draws WHERE status_id in ($1, $2)", models.DrawStatusPlanned, models.DrawStatusActive)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +164,7 @@ func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, er
 	var draws []models.DrawStore
 	for rows.Next() {
 		var draw models.DrawStore
-		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.Cost, &draw.SaleDate, &draw.StartDate); err != nil {
 			return draws, err
 		}
 		draws = append(draws, draw)
@@ -181,7 +177,7 @@ func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, er
 }
 
 func (r *repository) ListCompletedDraw(ctx context.Context) ([]models.DrawStore, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, sale_date, start_date FROM draws WHERE status_id = $1", models.DrawStatusCompleted)
+	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, cost, sale_date, start_date FROM draws WHERE status_id = $1", models.DrawStatusCompleted)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +188,7 @@ func (r *repository) ListCompletedDraw(ctx context.Context) ([]models.DrawStore,
 	var draws []models.DrawStore
 	for rows.Next() {
 		var draw models.DrawStore
-		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.Cost, &draw.SaleDate, &draw.StartDate); err != nil {
 			return draws, err
 		}
 		draws = append(draws, draw)
@@ -204,12 +200,13 @@ func (r *repository) ListCompletedDraw(ctx context.Context) ([]models.DrawStore,
 	return draws, nil
 }
 
-// Получение тиража по идентификатору билета
+// GetDrawByTicketId получение тиража по идентификатору билета
 func (r *repository) GetDrawByTicketId(ctx context.Context, ticketId int) (*models.DrawStore, error) {
 	draw := models.DrawStore{}
-	if err := r.db.QueryRowContext(ctx, "SELECT id, cost, status_id, lottery_type, sale_date, start_date FROM draws WHERE id = (select draw_id from tickets where id = $1)", ticketId).Scan(&draw.Id, &draw.Cost, &draw.StatusId, &draw.LotteryType, &draw.SaleDate, &draw.StartDate); err != nil {
+	if err := r.db.QueryRowContext(ctx, "SELECT id, cost, status_id, lottery_type, cost, sale_date, start_date FROM draws WHERE id = (select draw_id from tickets where id = $1)", ticketId).
+		Scan(&draw.Id, &draw.Cost, &draw.StatusId, &draw.LotteryType, &draw.Cost, &draw.SaleDate, &draw.StartDate); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Errorf("failed to get draw: %w", err)
+			return nil, errors.Errorf("failed to get draw by ticket id: %w", err)
 		}
 
 		return nil, nil

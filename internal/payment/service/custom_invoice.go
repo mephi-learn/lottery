@@ -2,10 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"homework/internal/models"
 	"homework/pkg/errors"
-	"strings"
 	"time"
 )
 
@@ -16,9 +14,7 @@ func (s *paymentService) RegisterCustomInvoice(ctx context.Context, drawId int, 
 		return -1, errors.New("unauthenticated user")
 	}
 
-	data := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(combination)), ","), "[]")
-
-	ticket, err := s.ticket.CreateReservedTicket(ctx, drawId, data)
+	ticket, err := s.ticket.CreateReservedTicket(ctx, drawId, combination)
 	if err != nil {
 		return -1, errors.Errorf("failed to reserve custom ticket: %w", err)
 	}
@@ -27,11 +23,17 @@ func (s *paymentService) RegisterCustomInvoice(ctx context.Context, drawId int, 
 		return -1, errors.Errorf("failed to reserve ticket %d: %w", ticket.Id, err)
 	}
 
+	draw, err := s.draw.GetDraw(ctx, drawId)
+	if err != nil {
+		return -1, errors.Errorf("failed to get draw: %w", err)
+	}
+
 	var invoice models.InvoiceStore
 
 	invoice.RegisterTime = time.Now()
 	invoice.StatusId = 1
 	invoice.TicketID = ticket.Id
+	invoice.Amount = draw.Cost
 
 	invoiceId, err = s.repo.CreateInvoice(ctx, invoice)
 

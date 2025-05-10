@@ -14,6 +14,7 @@ type Repository interface {
 	Create(ctx context.Context, user *models.SignUpInput) (userId int, err error)                     // Создание пользователя
 	GetByUsernameAndPassword(ctx context.Context, userData *models.SignInInput) (*models.User, error) // Получение данных пользователя по его логину и паролю
 	GetById(ctx context.Context, userId int) (*models.User, error)                                    // Получение данных пользователя по его идентификатору
+	List(ctx context.Context) ([]*models.User, error)                                                 // Получение списка пользователей
 }
 
 type AuthOption func(*authService) error

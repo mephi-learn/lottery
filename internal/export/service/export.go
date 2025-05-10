@@ -19,7 +19,7 @@ func (s *exportService) ExportDraws(ctx context.Context) (*models.DrawExportResu
 			return nil, errors.Errorf("failed to get draw statistic: %w", err)
 		}
 		result := &models.DrawExportResult{
-			DrawId:         draw.Id,
+			DrawId:         draw.DrawId,
 			WinCombination: draw.WinCombination,
 			Statistic:      stat.Statistic,
 			Tickets:        make(map[string][]int),
