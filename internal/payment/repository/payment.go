@@ -13,9 +13,25 @@ func (r *repository) DebitingFundsFromWallet(ctx context.Context, amount float64
 		return errors.Errorf("authentificate need: %w", err)
 	}
 
-	_, err = r.db.ExecContext(ctx, "update users set wallet = wallet - $1 where id = $2", amount, user.ID)
+	tr, err := r.db.Begin()
+	defer func() {
+		_ = tr.Rollback()
+	}()
 	if err != nil {
+		return errors.Errorf("failed to initialize storage transaction: %w", err)
+	}
+
+	var balance float64
+	if err = r.db.QueryRowContext(ctx, "update users set wallet = wallet - $1 where id = $2 returning wallet", amount, user.ID).Scan(&balance); err != nil {
 		return errors.Errorf("failed to debiting funds from wallet: %w", err)
+	}
+
+	if balance < 0 {
+		return errors.New("no money in wallet")
+	}
+
+	if err = tr.Commit(); err != nil {
+		return errors.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil

@@ -49,7 +49,18 @@ func (s *paymentService) RegisterPayment(ctx context.Context, req *models.Paymen
 
 func (s *paymentService) paymentSystemMock(ctx context.Context, req *models.PaymentRequest, amount float64) error {
 	if req.CVC == 123 {
+
+		// Списание средств с кошелька пользователя
+		err := s.repo.DebitingFundsFromWallet(ctx, amount)
+		if err != nil {
+			return errors.Errorf("failed to debiting funds from wallet: %w", err)
+		}
+
 		return nil
+	}
+
+	if req.CVC == 321 {
+		return errors.New("100% payment error way")
 	}
 
 	// Успешный платёж с вероятностью 80% (примерно)
