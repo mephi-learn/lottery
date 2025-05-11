@@ -50,3 +50,18 @@ func (r *repository) GetInvoiceByTicketId(ctx context.Context, ticketId int) (*m
 
 	return &invoice, nil
 }
+
+// PaidInvoice Ищменение статуса инвойса на "Оплачен"
+func (r *repository) PaidInvoice(ctx context.Context, invoiceId int) error {
+	result, err := r.db.ExecContext(ctx, "update invoices set status_id = $1 where id = $2", models.InvoiceStatusPaid, invoiceId)
+	if err != nil {
+		return errors.Errorf("failed to update invoice status: %w", err)
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if err != nil || affectedRows == 0 {
+		return errors.Errorf("invoice not found: %w", err)
+	}
+
+	return nil
+}

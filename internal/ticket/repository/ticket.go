@@ -120,6 +120,9 @@ func (r *repository) LoadTicketsByUserId(ctx context.Context, userId int) ([]*mo
 func (r *repository) GetTicketById(ctx context.Context, ticketId int) (*models.Ticket, error) {
 	ticket := models.Ticket{}
 	if err := r.db.QueryRowContext(ctx, "select id, status_id, draw_id, data, cost from tickets where id = $1", ticketId).Scan(&ticket.Id, &ticket.Status, &ticket.DrawId, &ticket.Data, &ticket.Cost); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("there is no ticket with this ID")
+		}
 		return nil, errors.Errorf("failed to get ticket: %w", err)
 	}
 

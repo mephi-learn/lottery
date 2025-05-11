@@ -4,6 +4,46 @@ import (
 	"time"
 )
 
+const (
+	InvoiceStatusUnknown InvoiceStatus = iota
+	InvoiceStatusActive
+	InvoiceStatusPaid
+	InvoiceStatusCanceled
+	InvoiceStatusFailed
+)
+
+type InvoiceStatus int
+
+func (d *InvoiceStatus) String() string {
+	switch *d {
+	case InvoiceStatusActive:
+		return "active"
+	case InvoiceStatusPaid:
+		return "completed"
+	case InvoiceStatusCanceled:
+		return "canceled"
+	case InvoiceStatusFailed:
+		return "failed"
+	default:
+		return "unknown"
+	}
+}
+
+func InvoiceStatusFromString(status string) InvoiceStatus {
+	switch status {
+	case "active":
+		return InvoiceStatusActive
+	case "completed":
+		return InvoiceStatusPaid
+	case "canceled":
+		return InvoiceStatusCanceled
+	case "failed":
+		return InvoiceStatusFailed
+	default:
+		return InvoiceStatusUnknown
+	}
+}
+
 // Invoice представляет инвойс для оплаты билета.
 type Invoice struct {
 	ID           int       `json:"id"`
@@ -37,8 +77,7 @@ type Payment struct {
 type PaymentRequest struct {
 	CardNumber string  `json:"card_number"`
 	CVC        int     `json:"cvc"`
-	InvoiceID  int     `json:"invoice_id"` // Добавлено: ID инвойса для оплаты
-	Price      float64 `json:"price"`      // Добавлено: Сумма платежа
-	UserID     int     `json:"user_id"`    // Добавлено: ID пользователя, который платит
+	Price      float64 `json:"price"`   // Добавлено: Сумма платежа
+	UserID     int     `json:"user_id"` // Добавлено: ID пользователя, который платит
 	TicketID   int     `json:"ticket_id"`
 }

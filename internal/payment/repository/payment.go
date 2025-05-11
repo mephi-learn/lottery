@@ -52,3 +52,29 @@ func (r *repository) GetAmountInUserWallet(ctx context.Context) (float64, error)
 
 	return amountInWallet, nil
 }
+
+// FillWallet Пополнение кошелька пользователя
+func (r *repository) FillWallet(ctx context.Context, amount float64) error {
+	user, err := models.UserFromContext(ctx)
+	if err != nil {
+		return errors.Errorf("authentificate need: %w", err)
+	}
+
+	tr, err := r.db.Begin()
+	defer func() {
+		_ = tr.Rollback()
+	}()
+	if err != nil {
+		return errors.Errorf("failed to initialize storage transaction: %w", err)
+	}
+
+	if _, err = r.db.ExecContext(ctx, "update users set wallet = wallet + $1 where id = $2", amount, user.ID); err != nil {
+		return errors.Errorf("failed funds transfer: %w", err)
+	}
+
+	if err = tr.Commit(); err != nil {
+		return errors.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}

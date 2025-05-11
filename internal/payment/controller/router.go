@@ -46,7 +46,9 @@ func WithService(svc paymentService) HandlerOption {
 type paymentService interface {
 	RegisterInvoice(ctx context.Context, ticketId int) (invoiceId int, err error)
 	RegisterCustomInvoice(ctx context.Context, drawId int, combination []int) (invoiceId int, err error)
-	RegisterPayment(ctx context.Context, req *models.PaymentRequest) (err error)
+
+	RegisterPayment(ctx context.Context, invoiceId int) (err error)
+	FillWallet(cts context.Context, req *models.PaymentRequest) (err error)
 }
 
 type RouteOption func(*handler)
@@ -57,6 +59,7 @@ func (h *handler) WithRouter(mux *http.ServeMux) {
 	mux.Handle("POST /api/invoice/draws/{draw_id}/ticket", auth.Authenticated(h.RegisterCustomInvoice))
 	// Payment
 	mux.Handle("POST /api/payments/{invoice_id}", auth.Authenticated(h.RegisterPayment))
+	mux.Handle("POST /api/payments/fill_wallet", auth.Authenticated(h.FillWallet))
 }
 
 // 1. Если идёт выбор билета, то из тикет сервиса получаем список доступных билетов (статус тиража: запланирован, билет без user_id в статусе: готов)
