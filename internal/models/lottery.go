@@ -24,12 +24,12 @@ type Lottery interface {
 }
 
 func NewLottery5from36() Lottery {
-	l := newLottery("5from36", "5 из 36", 5, 1, 36)
+	l := newLottery("5from36", "5 из 36", 5, 1, 36, 3)
 	return &l
 }
 
 func NewLottery6from45() Lottery {
-	l := newLottery("6from45", "6 из 45", 6, 1, 45)
+	l := newLottery("6from45", "6 из 45", 6, 1, 45, 4)
 	return &l
 }
 
@@ -47,18 +47,20 @@ type lottery struct {
 	combinationLength int
 	minAllowDigit     int
 	maxAllowDigit     int
+	minWinDigit       int
 
 	combinations map[string]struct{}
 	Tickets      []*lotteryTicket
 }
 
-func newLottery(id, name string, combinationLength, minAllowDigit, maxAllowDigit int) lottery {
+func newLottery(id, name string, combinationLength, minAllowDigit, maxAllowDigit int, minWinDigit int) lottery {
 	return lottery{
 		id:                id,
 		name:              name,
 		combinationLength: combinationLength,
 		minAllowDigit:     minAllowDigit,
 		maxAllowDigit:     maxAllowDigit,
+		minWinDigit:       minWinDigit,
 	}
 }
 
@@ -77,6 +79,7 @@ func (l *lottery) Create() Lottery {
 		combinationLength: l.combinationLength,
 		minAllowDigit:     l.minAllowDigit,
 		maxAllowDigit:     l.maxAllowDigit,
+		minWinDigit:       l.minWinDigit,
 	}
 }
 
@@ -152,7 +155,7 @@ func (l *lottery) Drawing(combination []int) (map[string][]*Ticket, error) {
 				matched++
 			}
 		}
-		if matched > 0 {
+		if matched >= l.minWinDigit {
 			value := strconv.Itoa(matched)
 			result[value] = append(result[value], l.toTicket(ticket))
 		}

@@ -9,15 +9,6 @@ import (
 )
 
 func (r *repository) CreateDraw(ctx context.Context, draw *models.DrawStore) (int, error) {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return -1, errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return -1, errors.Errorf("permnission denied, admin only area")
-	}
-
 	var drawId int
 	if err := r.db.QueryRowContext(ctx, "insert into draws(status_id, lottery_type, cost, sale_date, start_date) values($1, $2, $3, $4, $5) returning id",
 		draw.StatusId, draw.LotteryType, draw.Cost, draw.SaleDate, draw.StartDate).Scan(&drawId); err != nil {
@@ -147,15 +138,6 @@ func (r *repository) FailedDraw(ctx context.Context, drawId int) error {
 }
 
 func (r *repository) SetDrawSaleDate(ctx context.Context, drawId int, begin time.Time) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
 	result, err := r.db.ExecContext(ctx, "update draws set dale_date = $1 where id = $2", begin.Unix(), drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw sale_date: %w", err)
@@ -170,15 +152,6 @@ func (r *repository) SetDrawSaleDate(ctx context.Context, drawId int, begin time
 }
 
 func (r *repository) SetDrawStartDate(ctx context.Context, drawId int, start time.Time) error {
-	user, err := models.UserFromContext(ctx)
-	if err != nil {
-		return errors.Errorf("authentificate need: %w", err)
-	}
-
-	if !user.Admin {
-		return errors.Errorf("permnission denied, admin only area")
-	}
-
 	result, err := r.db.ExecContext(ctx, "update draws set dale_date = $1 where id = $2", start.Unix(), drawId)
 	if err != nil {
 		return errors.Errorf("failed to update draw start_date: %w", err)
@@ -211,6 +184,32 @@ func (r *repository) ListActiveDraw(ctx context.Context) ([]models.DrawStore, er
 	}
 	if err = rows.Err(); err != nil {
 		return draws, err
+	}
+
+	return draws, nil
+}
+
+func (r *repository) ListReadyToBeginDraws(ctx context.Context) ([]*models.DrawStore, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id, status_id, lottery_type, cost, sale_date, start_date FROM draws WHERE status_id = $1 and start_date is not null and start_date < $2", models.DrawStatusPlanned, time.Now())
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var draws []*models.DrawStore
+	for rows.Next() {
+		var draw models.DrawStore
+		if err := rows.Scan(&draw.Id, &draw.StatusId, &draw.LotteryType, &draw.Cost, &draw.SaleDate, &draw.StartDate); err != nil {
+			return nil, err
+		}
+		if !draw.StartDate.IsZero() {
+			draws = append(draws, &draw)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return draws, nil

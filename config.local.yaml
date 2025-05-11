@@ -14,4 +14,4 @@ storage:
     user:     mephy
     password: mephy
     database: mephy
-    schema:   lottery
+    ssl_mode: disable

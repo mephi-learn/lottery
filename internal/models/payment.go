@@ -73,11 +73,9 @@ type Payment struct {
 	InvoiceID   string    `json:"invoice_id"` // Ссылка на ID инвойса
 }
 
-// Структура для запроса регистрации платежа.
+// PaymentRequest структура для запроса регистрации платежа.
 type PaymentRequest struct {
 	CardNumber string  `json:"card_number"`
 	CVC        int     `json:"cvc"`
-	Price      float64 `json:"price"`   // Добавлено: Сумма платежа
-	UserID     int     `json:"user_id"` // Добавлено: ID пользователя, который платит
-	TicketID   int     `json:"ticket_id"`
+	Price      float64 `json:"price"` // Добавлено: Сумма платежа
 }

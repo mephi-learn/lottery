@@ -22,7 +22,7 @@ func (r *repository) StoreTicket(ctx context.Context, ticket *models.Ticket) err
 func (r *repository) StoreTickets(ctx context.Context, tickets []*models.Ticket) error {
 	tr, err := r.db.Begin()
 	if err != nil {
-		return errors.Errorf("failed to start transaction: %w", err)
+		return errors.Errorf("failed to begin storage transaction: %w", err)
 	}
 	defer func() {
 		_ = tr.Rollback()
@@ -37,7 +37,11 @@ func (r *repository) StoreTickets(ctx context.Context, tickets []*models.Ticket)
 		ticket.Id = ticketId
 	}
 
-	return tr.Commit()
+	if err = tr.Commit(); err != nil {
+		return errors.Errorf("failed to commit storage transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (r *repository) LoadTicketsByDrawId(ctx context.Context, drawId int) ([]*models.Ticket, error) {

@@ -28,6 +28,8 @@ type DrawService interface {
 	CancelDraw(ctx context.Context, drawId int) error
 	FailedDraw(ctx context.Context, drawId int) error
 	Drawing(ctx context.Context, drawId int, combination []int) (*models.DrawingResult, error)
+	DrawingAndMarkTickets(ctx context.Context, drawId int, combination []int) (*models.DrawingResult, error)
+	GetReadyToBeginDraws(ctx context.Context) ([]*models.DrawStore, error) // Получение списка готовых к розыгрышу тиражей
 }
 
 type DrawOption func(*resultService) error

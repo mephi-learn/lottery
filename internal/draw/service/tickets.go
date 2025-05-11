@@ -6,6 +6,15 @@ import (
 	"homework/pkg/errors"
 )
 
+func (s *drawService) GetReadyToBeginDraws(ctx context.Context) ([]*models.DrawStore, error) {
+	draws, err := s.repo.ListReadyToBeginDraws(ctx)
+	if err != nil {
+		return nil, errors.Errorf("failed get draws ready to begin: %w", err)
+	}
+
+	return draws, err
+}
+
 func (s *drawService) Drawing(ctx context.Context, drawId int, combination []int) (*models.DrawingResult, error) {
 	s.log.InfoContext(ctx, "start drawing")
 	defer s.log.InfoContext(ctx, "end drawing")
@@ -24,7 +33,7 @@ func (s *drawService) Drawing(ctx context.Context, drawId int, combination []int
 	}
 
 	// Считываем купленные билеты из хранилища
-	ticketsIn, err := s.repo.LoadBoughtTicketsByDrawId(ctx, drawId)
+	ticketsIn, err := s.repo.LoadParticipatingTicketsByDrawId(ctx, drawId)
 	if err != nil {
 		s.log.ErrorContext(ctx, "failed load tickets from storage", "error", err)
 		return nil, errors.Errorf("failed load tickets from storage: %w", err)
@@ -63,4 +72,24 @@ func (s *drawService) Drawing(ctx context.Context, drawId int, combination []int
 	}
 
 	return resp, nil
+}
+
+func (s *drawService) DrawingAndMarkTickets(ctx context.Context, drawId int, combination []int) (*models.DrawingResult, error) {
+	stat, err := s.Drawing(ctx, drawId, combination)
+	if err != nil {
+		return nil, err
+	}
+
+	winTickets := make([]int, 0)
+	for _, list := range stat.WinTickets {
+		for _, ticket := range list {
+			winTickets = append(winTickets, ticket.Id)
+		}
+	}
+
+	if err = s.repo.MarkDrawTickets(ctx, drawId, winTickets); err != nil {
+		return nil, errors.Errorf("mark ticket failed: %w", err)
+	}
+
+	return stat, nil
 }

@@ -14,12 +14,12 @@ func (r *repository) DebitingFundsFromWallet(ctx context.Context, amount float64
 	}
 
 	tr, err := r.db.Begin()
+	if err != nil {
+		return errors.Errorf("failed to begin storage transaction: %w", err)
+	}
 	defer func() {
 		_ = tr.Rollback()
 	}()
-	if err != nil {
-		return errors.Errorf("failed to initialize storage transaction: %w", err)
-	}
 
 	var balance float64
 	if err = r.db.QueryRowContext(ctx, "update users set wallet = wallet - $1 where id = $2 returning wallet", amount, user.ID).Scan(&balance); err != nil {
@@ -31,7 +31,7 @@ func (r *repository) DebitingFundsFromWallet(ctx context.Context, amount float64
 	}
 
 	if err = tr.Commit(); err != nil {
-		return errors.Errorf("failed to commit transaction: %w", err)
+		return errors.Errorf("failed to commit storage transaction: %w", err)
 	}
 
 	return nil
@@ -61,12 +61,12 @@ func (r *repository) FillWallet(ctx context.Context, amount float64) error {
 	}
 
 	tr, err := r.db.Begin()
-	defer func() {
-		_ = tr.Rollback()
-	}()
 	if err != nil {
 		return errors.Errorf("failed to initialize storage transaction: %w", err)
 	}
+	defer func() {
+		_ = tr.Rollback()
+	}()
 
 	if _, err = r.db.ExecContext(ctx, "update users set wallet = wallet + $1 where id = $2", amount, user.ID); err != nil {
 		return errors.Errorf("failed funds transfer: %w", err)

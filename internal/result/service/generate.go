@@ -4,6 +4,7 @@ import (
 	"context"
 	"homework/internal/models"
 	"homework/pkg/errors"
+	"time"
 )
 
 func (s *resultService) Drawing(ctx context.Context, drawId int) ([]int, error) {
@@ -48,10 +49,44 @@ func (s *resultService) Drawing(ctx context.Context, drawId int) ([]int, error) 
 
 	_ = s.draw.CompletedDraw(ctx, drawId)
 
-	//tickets, err := s.draw.DrawingStatistic(ctx, drawId, winningNumbers)
-	//if err != nil {
-	//
-	//}
+	// Маркируем билеты
+	_, err = s.draw.DrawingAndMarkTickets(ctx, drawId, winningNumbers)
+	if err != nil {
+
+	}
 
 	return winningNumbers, nil
+}
+
+func (s *resultService) StartDrawsReadyToBegin(ctx context.Context) {
+	s.log.InfoContext(ctx, "starting search draw ready to begin")
+	ticker := time.NewTicker(time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				ticker.Stop()
+				s.log.InfoContext(ctx, "search draw ready to begin stopped")
+
+				return
+			case <-ticker.C:
+				s.log.InfoContext(ctx, "search draw ready to begin")
+				draws, err := s.draw.GetReadyToBeginDraws(ctx)
+				if err != nil {
+					s.log.ErrorContext(ctx, "failed to draws", "error", err)
+					continue
+				}
+
+				if len(draws) > 0 {
+					s.log.InfoContext(ctx, "found ready to begin draws", "count", len(draws))
+				}
+
+				for _, draw := range draws {
+					if _, err = s.Drawing(ctx, draw.Id); err != nil {
+						s.log.ErrorContext(ctx, "failed to drawing", "draw_id", draw.Id, "error", err)
+					}
+				}
+			}
+		}
+	}()
 }

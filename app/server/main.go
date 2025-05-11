@@ -160,6 +160,8 @@ func main() {
 		resultservice.WithDrawService(drawService),
 	))
 
+	resultService.StartDrawsReadyToBegin(ctx)
+
 	// Инициализация контроллера DrawResult.
 	resultController := start(resultcontroller.NewHandler(
 		resultcontroller.WithLogger(resultLog.WithGroup("controller")),
