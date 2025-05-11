@@ -12,9 +12,11 @@ type Repository interface {
 	CreateInvoice(ctx context.Context, invoice models.InvoiceStore) (invoiceId int, err error) // Создание инвойса
 	GetInvoice(ctx context.Context, invoiceId int) (*models.InvoiceStore, error)               // Получние инвойса по идентификатору
 	GetInvoiceByTicketId(ctx context.Context, ticketId int) (*models.InvoiceStore, error)      // Получение инвойса по идентификатору билета
+	PaidInvoice(ctx context.Context, invoiceId int) error                                      // Изменение статуса инвойса на "Оплачен"
 
 	DebitingFundsFromWallet(ctx context.Context, invoice float64) error // Списание средств с кошелька пользователя
 	GetAmountInUserWallet(ctx context.Context) (float64, error)         // Получение суммы на кошельке пользователя
+	FillWallet(ctx context.Context, amount float64) error               // Пополнение кошелька пользователя
 }
 
 // TicketService реализует интерфейс сервиса лотереи.

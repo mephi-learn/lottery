@@ -28,7 +28,7 @@ func (s *paymentService) RegisterInvoice(ctx context.Context, ticketId int) (inv
 	if err != nil {
 		return -1, errors.Errorf("failed to get ticket: %w", err)
 	}
-	if ticket.Status > 1 {
+	if ticket.Status != 1 {
 		status := models.TicketStatus(ticket.Status)
 		return -1, errors.Errorf("ticket has status %q", status.String())
 	}
