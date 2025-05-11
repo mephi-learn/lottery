@@ -15,6 +15,7 @@ FROM gcr.io/distroless/static-debian11:nonroot
 WORKDIR /app
 
 COPY --from=build /go/bin/app ./app
+COPY --from=build /src/migrations ./migrations
 
 USER nonroot:nonroot
 
