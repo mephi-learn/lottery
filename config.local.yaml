@@ -11,7 +11,7 @@ storage:
   postgres:
     host:     db
     port:     5432
-    user:     mephy
-    password: mephy
-    database: mephy
+    user:     user
+    password: pass
+    database: mydb
     ssl_mode: disable

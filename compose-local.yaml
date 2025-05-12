@@ -12,17 +12,17 @@ services:
       - ./config.local.yaml:/app/config.yaml:ro
     entrypoint: ["/app/app", "-config", "/app/config.yaml"]
   db:
-    image: postgres:17
+    image: postgres:17.4
     environment:
-      POSTGRES_DB: mephy
-      POSTGRES_USER: mephy
-      POSTGRES_PASSWORD: mephy
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: mydb
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mephy"]
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'"]
       interval: 10s
       timeout: 5s
       retries: 5
