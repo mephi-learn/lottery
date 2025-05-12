@@ -1,0 +1,727 @@
+type: collection.insomnia.rest/5.0
+name: Lottery
+meta:
+  id: wrk_6c3b047f78a448668510c799f547ec8f
+  created: 1745563115669
+  modified: 1745563115669
+collection:
+  - name: Users
+    meta:
+      id: fld_b4638e453f584ba4a7ac5d523b95acdb
+      created: 1745563115683
+      modified: 1746863445940
+      sortKey: -1746553542517
+    children:
+      - url: http://{{ _.address }}/api/auth/sign-up
+        name: Register Admin User
+        meta:
+          id: req_d9f86dadc272489f9a8186282e8f7f7c
+          created: 1745563115684
+          modified: 1745563115684
+          isPrivate: false
+          sortKey: -1745305950765
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "admin",
+            	"username": "admin",
+            	"password": "1",
+            	"email": "no@email.net",
+            	"admin": true
+            }
+        parameters:
+          - disabled: true
+            id: pair_704500e46cf54df7a14386b86ee68db3
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/auth/sign-up
+        name: Register User
+        meta:
+          id: req_6b054f7cc5604e45bf42a792ca38192a
+          created: 1745563115685
+          modified: 1746862160657
+          isPrivate: false
+          sortKey: -1745305950615
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "user",
+            	"username": "user",
+            	"password": "1",
+            	"email": "user@email.net",
+            	"admin": false
+            }
+        parameters:
+          - disabled: true
+            id: pair_6becef29b9ca419c975d5132c64c1f57
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/auth/sign-in
+        name: Login User
+        meta:
+          id: req_5c718aca248f4a6d83719fd9607d4579
+          created: 1745563115686
+          modified: 1745563115686
+          isPrivate: false
+          sortKey: -1745305950565
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "admin",
+            	"password": "1"
+            }
+        parameters:
+          - disabled: true
+            id: pair_90e1480e3b954b32bf1b6b35d25d638b
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/admin/auth/list
+        name: List Users (Admin only)
+        meta:
+          id: req_0d402ca762c341d6b431a4720b9b5e09
+          created: 1746734757867
+          modified: 1746863367242
+          isPrivate: false
+          sortKey: -1745305950465
+        method: GET
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Draws
+    meta:
+      id: fld_dbcd021c91924b8bb9c10e23d11465ff
+      created: 1745563115687
+      modified: 1746863452144
+      sortKey: -1746553542467
+    children:
+      - url: http://{{ _.address }}/api/admin/draws
+        name: Create Draw
+        meta:
+          id: req_6ad16aeb8a7c481a89bd5ffb0d2aca46
+          created: 1745563115687
+          modified: 1746982536884
+          isPrivate: false
+          sortKey: -1745328491290
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"status": "planned",
+            	"lottery": "5from36",
+            	"cost": 100,
+            	"sale_date": "2025-01-01T00:00:00Z",
+            	"start_date": null
+            }
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/admin/draws/{% prompt 'DrawId', 'Draw Id', '',
+          '', false, true %}/cancel
+        name: Cancel Draw
+        meta:
+          id: req_f3f53845c3f44f6eb93512b33aa4f05c
+          created: 1745563115688
+          modified: 1745563115688
+          isPrivate: false
+          sortKey: -1745317232267.75
+        method: PUT
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/draws/active
+        name: List Active Draws
+        meta:
+          id: req_ae39a47aa1b14512955fb73f9b7ff155
+          created: 1745563115689
+          modified: 1745563115689
+          isPrivate: false
+          sortKey: -1745311602756.625
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/draws/{% prompt 'DrawId', 'Draw Id', '', '',
+          false, true %}
+        name: Get Draw
+        meta:
+          id: req_6bd7c4fbd2554e358411e44183e3a031
+          created: 1745585662454
+          modified: 1745585800764
+          isPrivate: false
+          sortKey: -1745308776760.8125
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Tickets
+    meta:
+      id: fld_47501f2964ab45358c5232fe7ad005bb
+      created: 1745940204131
+      modified: 1746863461380
+      sortKey: -1746553542442
+    children:
+      - url: http://{{ _.address }}/api/admin/tickets/draws/{% prompt 'Номер тиража',
+          'Номер тиража', '', '', false, true %}/generate/{% prompt 'Количество
+          билетов', 'Количество билетов', '', '', false, true %}
+        name: Create Tickets
+        meta:
+          id: req_0cdfb417990b4a20a675aeb0fff5a96e
+          created: 1745940217519
+          modified: 1746530305999
+          isPrivate: false
+          sortKey: -1745940221785
+        method: POST
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/tickets/{% prompt 'Номер билета', 'Номер
+          билета', '', '', false, true %}
+        name: Get Ticket
+        meta:
+          id: req_e0f0ac1b814b4176a26399885b5a495e
+          created: 1745940232013
+          modified: 1746530924858
+          isPrivate: false
+          sortKey: -1745940221685
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Payments
+    meta:
+      id: fld_02f1f0caed17491bbc339593ac1258a7
+      created: 1746533253202
+      modified: 1746863469420
+      sortKey: -1746553542429.5
+    children:
+      - url: http://{{ _.address }}/api/tickets/draws/{% prompt 'Номер тиража', 'Номер
+          тиража', '', '', false, true %}
+        name: List Available Tickets
+        meta:
+          id: req_fc52e7c1dfb2441b8380baa210000a08
+          created: 1746530893276
+          modified: 1746983401717
+          isPrivate: false
+          sortKey: -1746533256485
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/invoice/{% prompt 'Номер билета', 'Номер
+          билета', '', '', false, true %}
+        name: Buy ticket (invoice)
+        meta:
+          id: req_17fc483dfec240ccac707efefe9a68ca
+          created: 1746534012940
+          modified: 1746534063135
+          isPrivate: false
+          sortKey: -1746236739135
+        method: POST
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/payments/{% prompt 'Номер счёта', 'Номер счёта',
+          '', '', false, true %}
+        name: Pay Invoice
+        meta:
+          id: req_1a9f714c98e3408487a6f7253796e42f
+          created: 1746535315376
+          modified: 1746984250352
+          isPrivate: false
+          sortKey: -1746088480460
+        method: POST
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/invoice/draws/{% prompt 'Номер тиража', 'Номер
+          тиража', '', '', false, true %}/ticket
+        name: Buy ticket custom combination (invoice)
+        meta:
+          id: req_c90f6cc52c8e433aa3342e13c165e09f
+          created: 1746557236413
+          modified: 1746628608827
+          isPrivate: false
+          sortKey: -1746162609797.5
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"combination": [1, 2, 3, 4, 5]
+            }
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/payments/fill_wallet
+        name: Fill Wallet
+        meta:
+          id: req_1e3779376fb9430bb968d29ea2d84ccf
+          created: 1746983331340
+          modified: 1746984168129
+          isPrivate: false
+          sortKey: -1746533256585
+        method: POST
+        body:
+          mimeType: application/json
+          text: |
+            {
+            	"card_number": "11231423", 	
+            	"cvc": 111,
+            	"price": 1000 
+            }
+        headers:
+          - id: pair_d24d0aeb5a884558a4d32dc692a908b4
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Results
+    meta:
+      id: fld_37bcbdeff7ba49278bbd85da7094a00e
+      created: 1746535492635
+      modified: 1746863472149
+      sortKey: -1746553542423.25
+    children:
+      - url: http://{{ _.address }}/api/results/{% prompt 'Номер тиража', 'Номер
+          тиража', '', '', false, true %}/generate
+        name: Drawing
+        meta:
+          id: req_fed21817d2f44b7b8d37a1f7e11cd0e3
+          created: 1746535754292
+          modified: 1746865754385
+          isPrivate: false
+          sortKey: -1746535767172
+        method: POST
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/results/{% prompt 'Номер тиража', 'Номер
+          тиража', '', '', false, true %}
+        name: Drawing Result
+        meta:
+          id: req_c2db1d264def49c7b8fb3562da5bd605
+          created: 1746537620643
+          modified: 1746537657182
+          isPrivate: false
+          sortKey: -1746534511828.5
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/results/tickets
+        name: User All Tickets Status
+        meta:
+          id: req_61a7e2148194489a9da40c8433601de0
+          created: 1746537843275
+          modified: 1746562196165
+          isPrivate: false
+          sortKey: -1746533884156.75
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/results/tickets/{% prompt 'Номер билета', 'Номер
+          билета', '', '', false, true %}/check
+        name: Check Ticket Status
+        meta:
+          id: req_4b7d9da8c62e4bae8dc1e2f75bde2d35
+          created: 1746540251526
+          modified: 1746541550560
+          isPrivate: false
+          sortKey: -1746534197992.625
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://{{ _.address }}/api/results/{% prompt 'Номер тиража', 'Номер
+          тиража', '', '', false, true %}/win
+        name: Draw Ticket Statistic
+        meta:
+          id: req_9985157824cf4867a9f5b423fdeebd59
+          created: 1746542660481
+          modified: 1746562192596
+          isPrivate: false
+          sortKey: -1746534041074.6875
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Export
+    meta:
+      id: fld_a3f69612eb5f4dd6ba85ef87f88c2d03
+      created: 1746553542417
+      modified: 1746553549494
+      sortKey: -1746553542417
+    children:
+      - url: http://{{ _.address }}/api/admin/export/draws
+        name: ExportData
+        meta:
+          id: req_f91fb7b01d2d4e1b8fb8eb594f9b6b42
+          created: 1746553569277
+          modified: 1746553581981
+          isPrivate: false
+          sortKey: -1746553574359
+        method: GET
+        body:
+          mimeType: application/json
+        parameters:
+          - disabled: false
+            id: pair_6b55ca7976634e54b69922e66fee477f
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.0.2
+        authentication:
+          type: bearer
+          token: "{{ _.token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_41aeeebfc6b34d4495a5c962e66ed01d
+    created: 1745563115681
+    modified: 1745563115681
+environments:
+  name: Base Environment
+  meta:
+    id: env_cbc456b578094ea692527a99a51efbf9
+    created: 1745563115679
+    modified: 1746972865667
+    isPrivate: false
+  data:
+    address: localhost:8080
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ7XCJpZFwiOjEsXCJuYW1lXCI6XCJhZG1pblwiLFwidXNlcm5hbWVcIjpcImFkbWluXCIsXCJlbWFpbFwiOlwibm9AZW1haWwubmV0XCIsXCJhZG1pblwiOnRydWV9IiwiZXhwIjoxNzQ2OTk0NDQ0LCJpYXQiOjE3NDY5NzI4NDR9._ku5RA5ig67ZSjhQaDTVOsZbI64qrSlpu8hzw5uKRNM
