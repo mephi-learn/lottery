@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const ticketLockTime = 2
+const ticketLockTime = 5
 
 func (s *ticketService) CreateTickets(ctx context.Context, drawId int, num int) ([]*models.Ticket, error) {
 	// Читаем существующие билеты конкретного тиража из БД, генерирую на основе правил новые билеты, сохраняю их и возвращаю списком

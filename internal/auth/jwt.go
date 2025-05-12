@@ -12,7 +12,7 @@ import (
 
 const (
 	jwtSecret   = "MySecret"
-	jwtDuration = 6 * time.Hour
+	jwtDuration = 1 * time.Hour
 )
 
 func AuthenticatedAdmin(next http.HandlerFunc) http.HandlerFunc {
